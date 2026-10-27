@@ -1,13 +1,13 @@
 'use strict';
 // Evidence-first draft pipeline. No AI generation, OAuth, upload or paid services.
 const BASE = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils';
-const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+const decode = s => s.replace(/&(?:amp|lt|gt|quot|apos);/g, x => ({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'"}[x]));
 function textBetween(xml, tag) {
   const m = xml.match(new RegExp('<'+tag+'(?:\\s[^>]*)?>([\\s\\S]*?)<\\/'+tag+'>','i'));
-  return m ? m[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim() : '';
+  return m ? decode(m[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim()) : '';
 }
 async function get(url, fetchImpl=globalThis.fetch) {
-  const r = await fetchImpl(url, {headers:{'User-Agent':'FisioTubeAI/2.0 (academic prototype)'}});
+  const r = await fetchImpl(url, {headers:{'User-Agent':'FisioTubeAI/2.0 (academic prototype)'},signal:AbortSignal.timeout(15000)});
   if (!r.ok) throw new Error('PubMed HTTP '+r.status);
   return r;
 }
@@ -27,10 +27,11 @@ async function fetchPubMedArticles(pmids,{fetchImpl=globalThis.fetch}={}) {
   const xml=await (await get(u,fetchImpl)).text();
   const records=[...xml.matchAll(/<PubmedArticle>([\s\S]*?)<\/PubmedArticle>/g)];
   return records.map(([,record])=>{
-    const pmid=textBetween(record,'PMID');
+    const citation=record.match(/<MedlineCitation(?:\s[^>]*)?>([\s\S]*?)<\/MedlineCitation>/)?.[1]||record;
+    const pmid=textBetween(citation,'PMID');
     const doi=record.match(/<ArticleId\s+IdType="doi"[^>]*>([^<]+)<\/ArticleId>/i)?.[1]||null;
-    return {pmid,doi,title:textBetween(record,'ArticleTitle'),abstract:textBetween(record,'AbstractText'),sourceUrl:'https://pubmed.ncbi.nlm.nih.gov/'+pmid+'/',retrievedAt:new Date().toISOString()};
-  }).filter(x=>/^\d+$/.test(x.pmid));
+    return {pmid,doi,title:textBetween(citation,'ArticleTitle'),abstract:[...((citation.match(/<Abstract(?:\s[^>]*)?>([\s\S]*?)<\/Abstract>/)?.[1]||'').matchAll(/<AbstractText(?:\s[^>]*)?>([\s\S]*?)<\/AbstractText>/g))].map(m=>decode(m[1].replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim())).join(' '),sourceUrl:'https://pubmed.ncbi.nlm.nih.gov/'+pmid+'/',retrievedAt:new Date().toISOString()};
+  }).filter(x=>/^\d+$/.test(x.pmid)&&pmids.map(String).includes(x.pmid));
 }
 function assessClaims(claims,articles) {
   const ids=new Set(articles.map(a=>a.pmid));
