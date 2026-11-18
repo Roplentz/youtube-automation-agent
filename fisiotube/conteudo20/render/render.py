@@ -365,13 +365,19 @@ def cta(t, last):
     s = SC['cta']; k = ease((t - s['t0']) / 0.4)
     bg = last.filter(ImageFilter.GaussianBlur(28 * k))
     img = Image.blend(bg, Image.new('RGB', (W, H), (8, 8, 10)), 0.55 * k); d = ImageDraw.Draw(img)
+    fD = fHook; size = 112
+    while d.textlength(s['destaque'], font=fD) > W - 100 and size > 60:   # destaque longo (ex.: um site) encolhe para caber
+        size -= 4; fD = F('Poppins-Bold.ttf', size)
     for i, (txt, col) in enumerate([(s['linha1'], WH), (s['destaque'], OR), (s['linha2'], WH)]):
         kk = ease((t - s['t0'] - 0.1 * i) / 0.35)
-        d.text((W / 2, 700 + i * 120 + (1 - kk) * 40), txt, font=fHook if col == OR else fH, fill=mix((20, 20, 20), col, kk), anchor='mm')
+        d.text((W / 2, 700 + i * 120 + (1 - kk) * 40), txt, font=fD if col == OR else fH, fill=mix((20, 20, 20), col, kk), anchor='mm')
     kb = ease((t - s['t0'] - 0.5) / 0.35); pulse = 1 + 0.03 * math.sin((t - s['t0']) * 6)
-    bw, bh = 520 * pulse, 120 * pulse
+    botao = s.get('botao', 'Salvar vídeo'); seta = botao == 'Salvar vídeo'
+    bw, bh = (d.textlength(botao, font=fH) + (150 if seta else 110)) * pulse, 120 * pulse
     rr(d, (W / 2 - bw / 2, 1120 - bh / 2, W / 2 + bw / 2, 1120 + bh / 2), 60, fill=mix((20, 20, 20), OR, kb))
-    d.text((W / 2 - 25, 1120), 'Salvar vídeo', font=fH, fill=mix((20, 20, 20), WH, kb), anchor='mm'); arrow(d, W / 2 + 205, 1118, 16, mix((20, 20, 20), WH, kb), up=False)
+    tw = d.textlength(botao, font=fH)
+    d.text((W / 2 - (25 if seta else 0), 1120), botao, font=fH, fill=mix((20, 20, 20), WH, kb), anchor='mm')
+    if seta: arrow(d, W / 2 - 25 + tw / 2 + 30, 1118, 16, mix((20, 20, 20), WH, kb), up=False)
     d.text((W / 2, 1720), s['rodape'], font=fS, fill=mix((20, 20, 20), MUT, kb), anchor='mm')
     return img
 

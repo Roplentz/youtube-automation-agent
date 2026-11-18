@@ -58,7 +58,7 @@ Gancho com `"fundo": "desfocado"` desfoca o vídeo atrás do título (útil quan
 - `equacao` — "A + B = resultado"; eventos `a`, `b`, `resultado`; parâmetros `kicker`, `a`, `b`, `resultado`.
 - `numero` — número grande que conta até `valor` a partir do evento `conta`; `prefixo`, `unidade`, `rotulo`, itens.
 - `cartao` — genérico: kicker, título, itens que entram no tempo da fala e rodapé com a fonte (`Fonte: PMID …`, preenchido a partir de `claims`).
-- `gancho` e `cta` — abertura e fechamento.
+- `gancho` e `cta` — abertura e fechamento. No `cta`, `botao` troca o texto do botão (padrão "Salvar vídeo", com seta) e um `destaque` longo, como um site, encolhe para caber.
 
 Novo modelo: escreva `draw_<nome>(img, t, box, full, s)` em `render.py`, registre em `DRAW` e em `MODELOS` (`storyboard.js`).
 
