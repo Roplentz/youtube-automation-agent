@@ -27,11 +27,15 @@ function fonteFor(scene,references){
  return 'Fonte: '+ids.filter(id=>known.has(id)).map(id=>'PMID '+id).join(' · ');
 }
 
+// Modelos com estado global no renderizador: um único bloco contínuo por vídeo.
+const SINGLETON=new Set(['osciloscopio','forca_fadiga']);
+
 function emptyEntry(modelo,t0){
  const base={t0,t1:t0,modelo};
  if(modelo==='osciloscopio') Object.assign(base,{keyframes_hz:[],rotulos:[],chips:[]});
  if(modelo==='forca_fadiga') base.eventos={};
- if(modelo==='cartao') base.itens=[];
+ if(modelo==='cartao'||modelo==='numero') base.itens=[];
+ if(modelo==='equacao'||modelo==='numero') base.eventos={};
  return base;
 }
 
@@ -71,8 +75,8 @@ function buildCenas(sb,rawWords,{arquivo='src.mp4',inicio=0,fim,cx=960,saida,cta
   const next=timed[i+1];
   const t1=next?next.t0:MAIN;
   let b=blocks[blocks.length-1];
-  if(!b||b.modelo!==x.scene.modelo){
-   if(blocks.some(o=>o.modelo===x.scene.modelo)) throw new Error(`modelo ${x.scene.modelo} reappears in ${x.scene.id}; keep one continuous block per modelo`);
+  if(!b||b.modelo!==x.scene.modelo||x.scene.novo_bloco===true){
+   if(SINGLETON.has(x.scene.modelo)&&blocks.some(o=>o.modelo===x.scene.modelo)) throw new Error(`modelo ${x.scene.modelo} reappears in ${x.scene.id}; keep one continuous block per modelo`);
    b=emptyEntry(x.scene.modelo,x.t0);blocks.push(b);
   }
   Object.assign(b,x.scene.params||{});

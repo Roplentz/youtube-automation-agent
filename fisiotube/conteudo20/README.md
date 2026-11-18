@@ -45,13 +45,16 @@ A pasta do passo 6 precisa conter `storyboard.json`, `cenas.json`, `words.json` 
 ```
 
 Ações de gatilho: `keyframe_hz`, `rotulo` (`[título, subtítulo]`), `chip`, `chips_fim`, `evento` (`freq_sobe|forca|fadiga`), `item` (modelo `cartao`).
-Cenas consecutivas do mesmo modelo viram um bloco contínuo; o mesmo modelo não pode reaparecer depois de outro.
+Cenas consecutivas do mesmo modelo viram um bloco contínuo; `"novo_bloco": true` abre outro bloco (ex.: dois cartões seguidos). `osciloscopio` e `forca_fadiga` só podem aparecer uma vez por vídeo.
+Correções de legenda: `correcoes_previstas` aceita `"palavra"` (global) ou `"palavra@tempo"` (só aquela ocorrência, tempo da transcrição).
 `layout: "full"` e `--sem-camera` (trechos sem apresentador, como slides) mostram o painel em tela cheia.
 
 ## Modelos de cena (`render/render.py`)
 
 - `osciloscopio` — pulsos elétricos + curva de tensão muscular **calculada** (somação de abalos → tetania conforme a frequência).
 - `forca_fadiga` — frequência sobe; barras de força e fadiga.
+- `equacao` — "A + B = resultado"; eventos `a`, `b`, `resultado`; parâmetros `kicker`, `a`, `b`, `resultado`.
+- `numero` — número grande que conta até `valor` a partir do evento `conta`; `prefixo`, `unidade`, `rotulo`, itens.
 - `cartao` — genérico: kicker, título, itens que entram no tempo da fala e rodapé com a fonte (`Fonte: PMID …`, preenchido a partir de `claims`).
 - `gancho` e `cta` — abertura e fechamento.
 

@@ -4,7 +4,7 @@
 const {assessClaims}=require('../scientific-core');
 
 const LAYOUTS=new Set(['cam','split','full']);
-const MODELOS=new Set(['osciloscopio','forca_fadiga','cartao']);
+const MODELOS=new Set(['osciloscopio','forca_fadiga','cartao','equacao','numero']);
 const ACOES=new Set(['keyframe_hz','rotulo','chip','chips_fim','evento','item']);
 const WORDS_PER_SECOND=2.4;
 

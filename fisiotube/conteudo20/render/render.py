@@ -1,7 +1,7 @@
 """Renderizador 'Conteúdo 2.0' — lê cenas.json (saída do agente diretor) + words.json
 (transcrição palavra a palavra) e gera o vídeo vertical 1080x1920.
 Uso: python3 render.py [preview_t ...]   (sem args = render completo)"""
-import json, math, os, subprocess, sys
+import json, math, os, re, subprocess, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -23,7 +23,7 @@ def F(name, size):
         if d and os.path.exists(os.path.join(d, name)): return ImageFont.truetype(os.path.join(d, name), size)
     sys.exit(f'Fonte {name} não encontrada. Instale Poppins ou defina CONTEUDO20_FONT_DIR.')
 fBig = F('Poppins-Bold.ttf', 150); fH = F('Poppins-Bold.ttf', 58); fM = F('Poppins-Medium.ttf', 36)
-fS = F('Poppins-Medium.ttf', 28); fCap = F('Poppins-Bold.ttf', 70); fHook = F('Poppins-Bold.ttf', 112)
+fS = F('Poppins-Medium.ttf', 28); fB = F('Poppins-Bold.ttf', 44); fCap = F('Poppins-Bold.ttf', 70); fHook = F('Poppins-Bold.ttf', 112)
 
 def ease(x): x = max(0, min(1, x)); return 1 - (1 - x) ** 3
 def lerp(a, b, k): return a + (b - a) * k
@@ -36,8 +36,9 @@ words = []
 for w in json.load(open('words.json', encoding='utf-8')):
     t = w['s'] - SRC0
     if 0 <= t < MAIN - 0.05:
-        txt = FIX.get(w['w'].strip(), w['w'].strip())
-        if txt.startswith('-') and words: words[-1]['w'] += txt; continue
+        raw = w['w'].strip()
+        txt = FIX.get(f"{raw}@{w['s']}", FIX.get(raw, raw))   # correção pontual (palavra@tempo) ou global
+        if (txt.startswith('-') or re.match(r'^[.,]\d', txt)) and words: words[-1]['w'] += txt; continue
         words.append(dict(w=txt, s=t, e=w['e'] - SRC0))
 chunks, cur = [], []
 for i, w in enumerate(words):
@@ -201,17 +202,76 @@ def draw_cartao(img, t, box, full, s):
     for line in wrap(d, s.get('titulo', ''), fH, x1 - x0 - 2 * pad):
         d.text((x0 + pad, yy + 30), line, font=fH, fill=WH, anchor='lm'); yy += 70
     yy += 30
-    for t0, txt in s.get('itens', []):
-        a = ease((t - t0) / 0.3)
-        if a <= 0: continue
-        d.ellipse((x0 + pad, yy + 22 - 9 + (1 - a) * 20, x0 + pad + 18, yy + 22 + 9 + (1 - a) * 20), fill=mix(CARD, OR, a))
-        for j, line in enumerate(wrap(d, txt, fM, x1 - x0 - 2 * pad - 50)):
-            d.text((x0 + pad + 44, yy + 22 + j * 48 + (1 - a) * 20), line, font=fM, fill=mix(CARD, WH, a), anchor='lm')
-        yy += 48 * max(1, len(wrap(d, txt, fM, x1 - x0 - 2 * pad - 50))) + 28
+    draw_itens(d, t, s.get('itens', []), x0 + pad, yy, x1 - x0 - 2 * pad)
     if s.get('fonte'):
         d.text((x0 + pad, y1 - pad), s['fonte'], font=fS, fill=MUT, anchor='ls')
 
-DRAW = {'osciloscopio': draw_osc_full, 'forca_fadiga': draw_ff, 'cartao': draw_cartao}
+def draw_itens(d, t, itens, x, yy, width):
+    for t0, txt in itens:
+        a = ease((t - t0) / 0.3)
+        if a <= 0: continue
+        lines = wrap(d, txt, fM, width - 50)
+        d.ellipse((x, yy + 13 + (1 - a) * 20, x + 18, yy + 31 + (1 - a) * 20), fill=mix(CARD, OR, a))
+        for j, line in enumerate(lines):
+            d.text((x + 44, yy + 22 + j * 48 + (1 - a) * 20), line, font=fM, fill=mix(CARD, WH, a), anchor='lm')
+        yy += 48 * max(1, len(lines)) + 28
+    return yy
+
+def draw_equacao(img, t, box, full, s):
+    """A + B = resultado. Eventos: a, b, resultado (tempos da fala)."""
+    d = ImageDraw.Draw(img); x0, y0, x1, y1 = box; pad = 50
+    rr(d, box, 36, fill=CARD, outline=LINE, width=2)
+    ev = s.get('eventos', {}); cx = (x0 + x1) / 2; w = x1 - x0 - 2 * pad
+    if s.get('kicker'): d.text((x0 + pad, y0 + pad + 10), s['kicker'].upper(), font=fS, fill=OR2, anchor='lm')
+    bh = 175 if full else 118; gap = 120 if full else 70
+    yy = y0 + pad + (130 if full else 60)
+    def termo(key, txt, y, destaque=False):
+        a = ease((t - ev.get(key, 1e9)) / 0.35)
+        if a <= 0: return
+        dy = (1 - a) * 30
+        if destaque:
+            rr(d, (x0 + pad, y + dy, x1 - pad, y + bh + 30 + dy), 30, fill=mix(CARD, OR, a))
+            d.text((cx, y + (bh + 30) / 2 + dy), txt, font=fH, fill=mix(CARD, WH, a), anchor='mm')
+        else:
+            rr(d, (x0 + pad, y + dy, x1 - pad, y + bh + dy), 28, fill=mix(CARD, (34, 31, 36), a), outline=mix(CARD, LINE, a), width=2)
+            lines = wrap(d, txt, fB, w - 60)
+            for j, line in enumerate(lines):
+                d.text((cx, y + bh / 2 + (j - (len(lines) - 1) / 2) * 50 + dy), line, font=fB, fill=mix(CARD, WH, a), anchor='mm')
+    def sinal(key, y, eq=False):
+        a = ease((t - ev.get(key, 1e9)) / 0.3)
+        if a <= 0: return
+        c = mix(CARD, OR, a); r = 22
+        if eq:
+            d.rectangle((cx - r, y - 12, cx + r, y - 4), fill=c); d.rectangle((cx - r, y + 4, cx + r, y + 12), fill=c)
+        else:
+            d.rectangle((cx - r, y - 4, cx + r, y + 4), fill=c); d.rectangle((cx - 4, y - r, cx + 4, y + r), fill=c)
+    termo('a', s.get('a', ''), yy)
+    sinal('b', yy + bh + gap / 2)
+    termo('b', s.get('b', ''), yy + bh + gap)
+    sinal('resultado', yy + 2 * bh + gap * 1.5, eq=True)
+    termo('resultado', s.get('resultado', ''), yy + 2 * bh + 2 * gap, destaque=True)
+
+def draw_numero(img, t, box, full, s):
+    """Número grande que conta até `valor` a partir do evento `conta`; unidade, rótulo e itens."""
+    d = ImageDraw.Draw(img); x0, y0, x1, y1 = box; pad = 50
+    rr(d, box, 36, fill=CARD, outline=LINE, width=2)
+    ev = s.get('eventos', {}); cx = (x0 + x1) / 2
+    if s.get('kicker'): d.text((x0 + pad, y0 + pad + 10), s['kicker'].upper(), font=fS, fill=OR2, anchor='lm')
+    k = ease((t - ev.get('conta', 1e9)) / 1.4)
+    yb = y0 + pad + (230 if full else 170)
+    if k > 0:
+        v = f"{round(s.get('valor', 0) * k):,}".replace(',', '.')
+        pre = s.get('prefixo', '')
+        num = pre + v; un = s.get('unidade', '')
+        wn = d.textlength(num, font=fBig); wu = d.textlength(' ' + un, font=fH) if un else 0
+        xs = cx - (wn + wu) / 2
+        d.text((xs, yb), num, font=fBig, fill=OR, anchor='ls')
+        if un: d.text((xs + wn, yb - 12), ' ' + un, font=fH, fill=WH, anchor='ls')
+        if s.get('rotulo'): d.text((cx, yb + 60), s['rotulo'], font=fM, fill=MUT, anchor='mm')
+    draw_itens(d, t, s.get('itens', []), x0 + pad, yb + 130, x1 - x0 - 2 * pad)
+
+DRAW = {'osciloscopio': draw_osc_full, 'forca_fadiga': draw_ff, 'cartao': draw_cartao,
+        'equacao': draw_equacao, 'numero': draw_numero}
 
 def panel(img, t, box, full):
     s = next((s for s in C['cenas'] if s['modelo'] in DRAW and s['t0'] <= t < s['t1']), None)

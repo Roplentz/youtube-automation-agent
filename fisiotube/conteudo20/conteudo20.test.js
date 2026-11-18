@@ -91,3 +91,17 @@ test('cli parse handles flags and positional args',()=>{
  const {parse}=require(path.join('..','conteudo20-cli'));
  assert.deepEqual(parse(['a.json','--inicio','5','--x']),{pos:['a.json'],opt:{inicio:'5',x:true}});
 });
+
+test('novo_bloco allows repeated multi-block models; singletons stay unique',()=>{
+ const sb=clone(exemplo);
+ sb.cenas=[
+  {id:'A',layout:'split',modelo:'cartao',params:{titulo:'Um'},gatilhos:[{palavra:'10',acao:{item:'x'}}]},
+  {id:'B',layout:'split',modelo:'cartao',novo_bloco:true,params:{titulo:'Dois'},gatilhos:[{palavra:'tetânica',acao:{item:'y'}}]},
+  {id:'C',layout:'split',modelo:'equacao',gatilhos:[{palavra:'aumenta a frequência',acao:{evento:'a'}}]}
+ ];
+ assert.equal(validateStoryboard(sb).ok,true);
+ const {cenas}=buildCenas(sb,words,{inicio:0});
+ const blocks=cenas.cenas.slice(1,-1);
+ assert.deepEqual(blocks.map(b=>[b.modelo,b.titulo]),[['cartao','Um'],['cartao','Dois'],['equacao',undefined]]);
+ assert.equal(blocks[2].eventos.a>blocks[1].t0,true);
+});
