@@ -288,9 +288,44 @@ def still_at(ts):
         STILLS[ts] = Image.frombuffer('RGB', (1920, 1080), b)
     return STILLS[ts]
 def sub_at(t): return next((x for x in SUBS if x[0] <= t < x[1]), None)
+
+# B-roll: [t0, t1, {"video": "broll/ex13.mp4", "inicio": 0, "rotulo": "Exercício 13"}] toca outro vídeo no lugar da câmera.
+PREVIEW = False
+READERS = {}
+def broll_frame(key, spec, off):
+    n = 1920 * 1080 * 3
+    if PREVIEW:
+        b = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(off), '-i', spec['video'], '-frames:v', '1', '-vf', 'scale=1920:1080',
+                            '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True).stdout
+        return Image.frombuffer('RGB', (1920, 1080), b) if len(b) >= n else None
+    r = READERS.get(key)
+    if r is None:
+        r = READERS[key] = {'p': subprocess.Popen(['ffmpeg', '-v', 'error', '-ss', str(off), '-i', spec['video'], '-vf', f'fps={FPS},scale=1920:1080',
+                                                   '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE), 'last': None}
+    b = r['p'].stdout.read(n)
+    if len(b) == n: r['last'] = Image.frombuffer('RGB', (1920, 1080), b)
+    return r['last']
+
+def fit_broll(fr, w, h, rotulo=None):
+    """Quadro 16:9 inteiro (exercício sem corte) sobre fundo desfocado do próprio vídeo."""
+    k = max(w / 1920, h / 1080); cw, ch = w / k, h / k
+    bg = fr.crop(((1920 - cw) / 2, (1080 - ch) / 2, (1920 + cw) / 2, (1080 + ch) / 2)).resize((w, h)).filter(ImageFilter.GaussianBlur(30))
+    bg = Image.blend(bg, Image.new('RGB', (w, h), (8, 8, 10)), 0.45)
+    fh = round(w * 1080 / 1920); y = 700 if h == H else 40
+    bg.paste(fr.resize((w, fh), Image.LANCZOS), (0, y))
+    if rotulo:
+        d = ImageDraw.Draw(bg); tw = d.textlength(rotulo, font=fS)
+        rr(d, (24, y + fh - 64, 24 + tw + 40, y + fh - 20), 22, fill=(14, 13, 16))
+        d.text((44, y + fh - 42), rotulo, font=fS, fill=OR2, anchor='lm')
+    return bg
+
 def cam_img(fr, t, w, h):
     sub = sub_at(t)
     if not sub: return crop_cam(fr, w, h)
+    if isinstance(sub[2], dict):
+        spec = sub[2]
+        b = broll_frame(SUBS.index(sub), spec, spec.get('inicio', 0) + t - sub[0])
+        return fit_broll(b or fr, w, h, spec.get('rotulo'))
     img = crop_cam(still_at(sub[2]), w, h)
     k = 1 + 0.08 * (t - sub[0]) / max(0.1, sub[1] - sub[0])
     cw, ch = w / k, h / k; x0, y0 = (w - cw) / 2, (h - ch) / 2
@@ -342,6 +377,7 @@ def cta(t, last):
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:   # prévia de quadros
+        PREVIEW = True
         want = [float(a) for a in sys.argv[1:]]; frs = {}
         for i, fr in enumerate(source_frames()):
             t = i / FPS
@@ -363,4 +399,5 @@ if __name__ == '__main__':
         im = frame(t, fr); enc.stdin.write(im.tobytes()); last = im; n += 1
     while n / FPS < TOTAL:
         enc.stdin.write(cta(n / FPS, last).tobytes()); n += 1
+    for r in READERS.values(): r['p'].kill()
     enc.stdin.close(); enc.wait(); print('ok', n, 'frames')

@@ -110,3 +110,8 @@ test('camera_substituta passes through to cenas.json',()=>{
  const sb=clone(exemplo);sb.camera_substituta=[[0,5,12.3]];
  assert.deepEqual(buildCenas(sb,words,{inicio:0}).cenas.camera_substituta,[[0,5,12.3]]);
 });
+
+test('camera_substituta accepts b-roll video specs',()=>{
+ const sb=clone(exemplo);sb.camera_substituta=[[0,5,{video:'broll/ex13.mp4',inicio:0,rotulo:'Exercício 13'}]];
+ assert.equal(buildCenas(sb,words,{inicio:0}).cenas.camera_substituta[0][2].video,'broll/ex13.mp4');
+});
