@@ -21,3 +21,6 @@ const core = require('./fisiotube/scientific-core');
 - Abstract text may be incomplete; no claim is considered scientifically verified automatically.
 - Rate-limit requests to NCBI in production and comply with its API policy.
 - No changes to existing server routes, scheduler, Supabase or deployment.
+
+## Conteúdo 2.0 (Fase 2, experimental)
+Pipeline local de roteiro → storyboard com referências → sincronização com a fala → vídeo vertical com painéis animados. Ver [`conteudo20/README.md`](conteudo20/README.md). Mantém as mesmas travas: sem publicação, sem APIs pagas, revisão humana obrigatória antes do render.

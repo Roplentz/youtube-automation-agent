@@ -1,0 +1,76 @@
+#!/usr/bin/env node
+'use strict';
+// Conteúdo 2.0 — comandos manuais e locais. Nada é publicado; nenhuma API paga é chamada.
+//   storyboard "<tema>" [--query "<busca PubMed>"] [--formato reel|vsl] [--marca X] [--out storyboard.json]
+//   validate <storyboard.json>
+//   transcribe <video.mp4> [words.json]
+//   sync <storyboard.json> <words.json> --inicio 5 [--fim 61.3] [--arquivo src.mp4] [--cx 960] [--sem-camera 8.6-19.2,52.8-56.3] [--out cenas.json]
+//   render <pasta>   (exige cenas.json, storyboard.json revisado e o vídeo-fonte na pasta)
+const fs=require('fs');
+const path=require('path');
+const {spawnSync}=require('child_process');
+const {createStoryboard,validateStoryboard,assertRenderable}=require('./conteudo20/storyboard');
+const {buildCenas}=require('./conteudo20/sync');
+
+const RENDER_DIR=path.join(__dirname,'conteudo20','render');
+const readJson=f=>JSON.parse(fs.readFileSync(f,'utf8'));
+const writeJson=(f,o)=>fs.writeFileSync(f,JSON.stringify(o,null,1)+'\n');
+
+function parse(argv){
+ const pos=[],opt={};
+ for(let i=0;i<argv.length;i++){
+  if(argv[i].startsWith('--')) opt[argv[i].slice(2)]=argv[i+1]!==undefined&&!argv[i+1].startsWith('--')?argv[++i]:true;
+  else pos.push(argv[i]);
+ }
+ return {pos,opt};
+}
+
+function python(script,args,cwd){
+ const bin=process.env.PYTHON||(process.platform==='win32'?'python':'python3');
+ const r=spawnSync(bin,[path.join(RENDER_DIR,script),...args],{cwd,stdio:'inherit'});
+ if(r.error) throw r.error;
+ if(r.status!==0) throw new Error(`${script} exited with ${r.status}`);
+}
+
+async function main(argv=process.argv.slice(2)){
+ const [cmd,...rest]=argv;const {pos,opt}=parse(rest);
+ if(cmd==='storyboard'){
+  const topic=pos.join(' ').trim();
+  if(!topic) throw new Error('Usage: storyboard "<tema>" [--query "..."]');
+  let draft={references:[]};
+  if(opt.query!==undefined||opt.pubmed){
+   const {prepareScientificStrategy}=require('./strategy-adapter');
+   ({draft}=await prepareScientificStrategy({topic,query:typeof opt.query==='string'?opt.query:topic,maxResults:5}));
+  }
+  const sb=createStoryboard({topic,draft,formato:opt.formato||'reel',marca:opt.marca||'FisioTube'});
+  const out=opt.out||`${sb.slug}.storyboard.json`;
+  writeJson(out,sb);
+  console.log(`Storyboard skeleton -> ${out} (${sb.references.length} referências). Preencha cenas e revise.`);
+ }else if(cmd==='validate'){
+  const v=validateStoryboard(readJson(pos[0]));
+  console.log(JSON.stringify(v,null,2));
+  if(!v.ok) process.exitCode=1;
+ }else if(cmd==='transcribe'){
+  if(!pos[0]) throw new Error('Usage: transcribe <video.mp4> [words.json]');
+  python('transcribe.py',[path.resolve(pos[0]),path.resolve(pos[1]||'words.json')],process.cwd());
+ }else if(cmd==='sync'){
+  if(pos.length<2) throw new Error('Usage: sync <storyboard.json> <words.json> --inicio <s>');
+  const sb=readJson(pos[0]);
+  const {cenas,naoEncontrados}=buildCenas(sb,readJson(pos[1]),{
+   arquivo:opt.arquivo||'src.mp4',inicio:Number(opt.inicio||0),fim:opt.fim!==undefined?Number(opt.fim):undefined,cx:Number(opt.cx||960),
+   cameraIndisponivel:typeof opt['sem-camera']==='string'?opt['sem-camera'].split(',').map(r=>r.split('-').map(Number)):[]});
+  writeJson(opt.out||'cenas.json',cenas);
+  console.log(`cenas.json -> ${opt.out||'cenas.json'}`);
+  if(naoEncontrados.length){console.warn('Gatilhos não encontrados na fala (ajuste o storyboard):');for(const x of naoEncontrados) console.warn(`  ${x.cena}: "${x.palavra}"`);process.exitCode=3;}
+ }else if(cmd==='render'){
+  const dir=path.resolve(pos[0]||'.');
+  assertRenderable(readJson(path.join(dir,'storyboard.json')));
+  python('render.py',[],dir);
+  console.log('Vídeo gerado como RASCUNHO. Revisão humana obrigatória antes de qualquer publicação.');
+ }else{
+  console.error('Commands: storyboard | validate | transcribe | sync | render');process.exitCode=2;
+ }
+}
+
+if(require.main===module)main().catch(err=>{console.error('Conteúdo 2.0 failed:',err.message);process.exitCode=1;});
+module.exports={main,parse};
