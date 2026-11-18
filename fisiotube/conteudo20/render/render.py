@@ -7,7 +7,7 @@ from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
 W, H, FPS = 1080, 1920, 30
 SPLIT = 880                       # altura do painel no modo dividido
-C = json.load(open('cenas.json'))
+C = json.load(open('cenas.json', encoding='utf-8'))
 SRC0, SRC1 = C['fonte']['inicio'], C['fonte']['fim']
 MAIN = SRC1 - SRC0
 TOTAL = C['cenas'][-1]['t1']
@@ -33,7 +33,7 @@ def mix(c1, c2, k): return tuple(int(lerp(a, b, k)) for a, b in zip(c1, c2))
 FIX = C.get('correcoes', {})                       # erros do Whisper -> grafia correta
 HL = {w.lower() for w in C.get('destaques', [])}   # palavras da legenda em laranja
 words = []
-for w in json.load(open('words.json')):
+for w in json.load(open('words.json', encoding='utf-8')):
     t = w['s'] - SRC0
     if 0 <= t < MAIN - 0.05:
         txt = FIX.get(w['w'].strip(), w['w'].strip())
