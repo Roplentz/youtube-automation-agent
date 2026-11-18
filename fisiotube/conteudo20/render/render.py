@@ -38,6 +38,7 @@ for w in json.load(open('words.json', encoding='utf-8')):
     if 0 <= t < MAIN - 0.05:
         raw = w['w'].strip()
         txt = FIX.get(f"{raw}@{w['s']}", FIX.get(raw, raw))   # correção pontual (palavra@tempo) ou global
+        if not txt: continue                                   # correção vazia remove a palavra da legenda
         if (txt.startswith('-') or re.match(r'^[.,]\d', txt)) and words: words[-1]['w'] += txt; continue
         words.append(dict(w=txt, s=t, e=w['e'] - SRC0))
 chunks, cur = [], []
@@ -283,6 +284,8 @@ def frame(t, fr):
     hook = SC['gancho']
     if t < hook['t1']:
         img = crop_cam(fr, W, H)
+        if hook.get('fundo') == 'desfocado':   # esconde tarjas/marcas atrás do título
+            img = Image.blend(img.filter(ImageFilter.GaussianBlur(22)), Image.new('RGB', (W, H), (8, 8, 10)), 0.35)
         ov = Image.new('RGBA', (W, H)); od = ImageDraw.Draw(ov)
         for y in range(900): od.line((0, y, W, y), fill=(8, 8, 10, int(210 * (1 - y / 900))))
         img = Image.alpha_composite(img.convert('RGBA'), ov).convert('RGB'); d = ImageDraw.Draw(img)

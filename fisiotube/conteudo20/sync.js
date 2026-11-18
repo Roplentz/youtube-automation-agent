@@ -95,7 +95,7 @@ function buildCenas(sb,rawWords,{arquivo='src.mp4',inicio=0,fim,cx=960,saida,cta
  const indisponivel=[...cameraIndisponivel];
  timed.forEach((x,i)=>{if(x.scene.layout==='full') indisponivel.push([x.t0,timed[i+1]?timed[i+1].t0:MAIN]);});
  const cenas=[
-  {t0:0,t1:hookEnd,modelo:'gancho',titulo:sb.gancho?.titulo||[sb.titulo],kicker:sb.gancho?.kicker||''},
+  {t0:0,t1:hookEnd,modelo:'gancho',titulo:sb.gancho?.titulo||[sb.titulo],kicker:sb.gancho?.kicker||'',...(sb.gancho?.fundo?{fundo:sb.gancho.fundo}:{})},
   ...blocks,
   {t0:MAIN,t1:Math.round((MAIN+ctaDur)*100)/100,modelo:'cta',...(sb.cta||{})}
  ];
