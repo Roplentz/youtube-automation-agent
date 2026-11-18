@@ -18,3 +18,11 @@ Development branch for scientific evidence integration into YouTube Automation A
 
 Upstream: https://github.com/darkzOGx/youtube-automation-agent
 License: MIT. Preserve upstream copyright and license notices.
+
+## Phase 2 — Conteúdo 2.0 (experimental)
+Vertical explainer videos where on-screen panels are triggered by words in the presenter's speech.
+1. Storyboard contract (`fisiotube/conteudo20/storyboard.js`) carries scientific references from Phase 1; every on-screen claim must cite a PMID present in `references`.
+2. Deterministic sync (`sync.js`) maps trigger words to timestamps from a local transcript; missing triggers are reported, never invented.
+3. Local renderer (`conteudo20/render/`, Python + ffmpeg); no paid APIs.
+4. Render gate: refuses while any scene lacks `revisado: true` or any claim lacks a source.
+5. Output is always a draft; publishing remains disabled.
