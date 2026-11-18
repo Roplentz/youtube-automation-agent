@@ -105,3 +105,8 @@ test('novo_bloco allows repeated multi-block models; singletons stay unique',()=
  assert.deepEqual(blocks.map(b=>[b.modelo,b.titulo]),[['cartao','Um'],['cartao','Dois'],['equacao',undefined]]);
  assert.equal(blocks[2].eventos.a>blocks[1].t0,true);
 });
+
+test('camera_substituta passes through to cenas.json',()=>{
+ const sb=clone(exemplo);sb.camera_substituta=[[0,5,12.3]];
+ assert.deepEqual(buildCenas(sb,words,{inicio:0}).cenas.camera_substituta,[[0,5,12.3]]);
+});

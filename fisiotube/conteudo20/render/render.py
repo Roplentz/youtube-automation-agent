@@ -278,12 +278,30 @@ def panel(img, t, box, full):
     s = next((s for s in C['cenas'] if s['modelo'] in DRAW and s['t0'] <= t < s['t1']), None)
     if s: DRAW[s['modelo']](img, t, box, full, s)
 
-def cam_ok(t): return not any(a <= t < b for a, b in C['camera_indisponivel'])
+# Trechos sem apresentador (slides, tarjas): quadro parado dela com zoom lento, em vez de esconder a pessoa.
+SUBS = C.get('camera_substituta', [])   # [[t0, t1, t_do_quadro], ...] em tempo do vídeo final
+STILLS = {}
+def still_at(ts):
+    if ts not in STILLS:
+        b = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(SRC0 + ts), '-i', C['fonte']['arquivo'], '-frames:v', '1',
+                            '-vf', 'scale=1920:1080', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True, check=True).stdout
+        STILLS[ts] = Image.frombuffer('RGB', (1920, 1080), b)
+    return STILLS[ts]
+def sub_at(t): return next((x for x in SUBS if x[0] <= t < x[1]), None)
+def cam_img(fr, t, w, h):
+    sub = sub_at(t)
+    if not sub: return crop_cam(fr, w, h)
+    img = crop_cam(still_at(sub[2]), w, h)
+    k = 1 + 0.08 * (t - sub[0]) / max(0.1, sub[1] - sub[0])
+    cw, ch = w / k, h / k; x0, y0 = (w - cw) / 2, (h - ch) / 2
+    return img.crop((x0, y0, x0 + cw, y0 + ch)).resize((w, h), Image.LANCZOS)
+
+def cam_ok(t): return sub_at(t) is not None or not any(a <= t < b for a, b in C['camera_indisponivel'])
 
 def frame(t, fr):
     hook = SC['gancho']
     if t < hook['t1']:
-        img = crop_cam(fr, W, H)
+        img = cam_img(fr, t, W, H)
         if hook.get('fundo') == 'desfocado':   # esconde tarjas/marcas atrás do título
             img = Image.blend(img.filter(ImageFilter.GaussianBlur(22)), Image.new('RGB', (W, H), (8, 8, 10)), 0.35)
         ov = Image.new('RGBA', (W, H)); od = ImageDraw.Draw(ov)
@@ -299,7 +317,7 @@ def frame(t, fr):
         return None
     img = Image.new('RGB', (W, H), BG)
     if cam_ok(t):
-        img.paste(crop_cam(fr, W, H - SPLIT), (0, SPLIT))
+        img.paste(cam_img(fr, t, W, H - SPLIT), (0, SPLIT))
         d = ImageDraw.Draw(img); d.rectangle((0, SPLIT - 4, W, SPLIT), fill=OR)
         panel(img, t, (40, 40, W - 40, SPLIT - 40), False)
         draw_caption(img, t, 1640)

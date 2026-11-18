@@ -101,7 +101,7 @@ function buildCenas(sb,rawWords,{arquivo='src.mp4',inicio=0,fim,cx=960,saida,cta
  ];
  return {
   cenas:{fonte:{arquivo,inicio,fim:end,cx},saida:saida||`${sb.slug||'video'}_conteudo20.mp4`,
-   camera_indisponivel:indisponivel,correcoes:sb.correcoes_previstas||{},destaques:sb.destaques||[],cenas},
+   camera_indisponivel:indisponivel,camera_substituta:sb.camera_substituta||[],correcoes:sb.correcoes_previstas||{},destaques:sb.destaques||[],cenas},
   naoEncontrados
  };
 }

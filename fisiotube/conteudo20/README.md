@@ -47,6 +47,7 @@ A pasta do passo 6 precisa conter `storyboard.json`, `cenas.json`, `words.json` 
 Ações de gatilho: `keyframe_hz`, `rotulo` (`[título, subtítulo]`), `chip`, `chips_fim`, `evento` (`freq_sobe|forca|fadiga`), `item` (modelo `cartao`).
 Cenas consecutivas do mesmo modelo viram um bloco contínuo; `"novo_bloco": true` abre outro bloco (ex.: dois cartões seguidos). `osciloscopio` e `forca_fadiga` só podem aparecer uma vez por vídeo.
 Correções de legenda: `correcoes_previstas` aceita `"palavra"` (global) ou `"palavra@tempo"` (só aquela ocorrência, tempo da transcrição); valor vazio remove a palavra.
+`"camera_substituta": [[t0, t1, t_quadro]]` no storyboard mostra, nesses intervalos, um quadro parado do apresentador (de `t_quadro`, escolhido numa pausa com boca fechada) com zoom lento — mantém a pessoa na tela quando o original corta para slides ou tem tarja.
 Gancho com `"fundo": "desfocado"` desfoca o vídeo atrás do título (útil quando há tarja ou marca no início da gravação).
 `layout: "full"` e `--sem-camera` (trechos sem apresentador, como slides) mostram o painel em tela cheia.
 
