@@ -6,11 +6,14 @@
 //   transcribe <video.mp4> [words.json]
 //   sync <storyboard.json> <words.json> --inicio 5 [--fim 61.3] [--arquivo src.mp4] [--cx 960] [--sem-camera 8.6-19.2,52.8-56.3] [--out cenas.json]
 //   render <pasta>   (exige cenas.json, storyboard.json revisado e o vídeo-fonte na pasta)
+//   validate-v2 <roteiro.json>          formato v2 (6 tipos de tela alternados)
+//   render-v2 <pasta> [roteiro.json]     exige roteiro revisado + os vídeos citados em clip
 const fs=require('fs');
 const path=require('path');
 const {spawnSync}=require('child_process');
 const {createStoryboard,validateStoryboard,assertRenderable}=require('./conteudo20/storyboard');
 const {buildCenas}=require('./conteudo20/sync');
+const {validateRoteiro,assertRenderableV2}=require('./conteudo20/roteiro_v2');
 
 const RENDER_DIR=path.join(__dirname,'conteudo20','render');
 const readJson=f=>JSON.parse(fs.readFileSync(f,'utf8'));
@@ -67,8 +70,20 @@ async function main(argv=process.argv.slice(2)){
   assertRenderable(readJson(path.join(dir,'storyboard.json')));
   python('render.py',[],dir);
   console.log('Vídeo gerado como RASCUNHO. Revisão humana obrigatória antes de qualquer publicação.');
+ }else if(cmd==='validate-v2'){
+  const v=validateRoteiro(readJson(pos[0]));
+  console.log(JSON.stringify(v,null,2));
+  if(!v.ok) process.exitCode=1;
+ }else if(cmd==='render-v2'){
+  const dir=path.resolve(pos[0]||'.');const file=pos[1]||'roteiro.json';
+  const rt=readJson(path.join(dir,file));
+  assertRenderableV2(rt);
+  const missing=rt.cenas.filter(c=>c.clip).map(c=>c.clip[0]).filter(f=>!fs.existsSync(path.join(dir,f)));
+  if(missing.length) throw new Error('Vídeos não encontrados na pasta: '+[...new Set(missing)].join(', '));
+  python('render_v2.py',[file],dir);
+  console.log('Vídeo gerado como RASCUNHO. Revisão humana obrigatória antes de qualquer publicação.');
  }else{
-  console.error('Commands: storyboard | validate | transcribe | sync | render');process.exitCode=2;
+  console.error('Commands: storyboard | validate | transcribe | sync | render | validate-v2 | render-v2');process.exitCode=2;
  }
 }
 

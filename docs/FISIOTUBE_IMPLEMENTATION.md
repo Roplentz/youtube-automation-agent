@@ -26,3 +26,6 @@ Vertical explainer videos where on-screen panels are triggered by words in the p
 3. Local renderer (`conteudo20/render/`, Python + ffmpeg); no paid APIs.
 4. Render gate: refuses while any scene lacks `revisado: true` or any claim lacks a source.
 5. Output is always a draft; publishing remains disabled.
+
+### Phase 2.1 — Format v2 (alternating screen types)
+Scene-by-scene Reels that rotate seven screen types (hook, footage, kinetic typography, object card, evidence card, icon split, final words) for footage without synced narration. `roteiro_v2.js` validates the script (an evidence card must cite a PMID listed in `references`) and gates rendering on human review; `render/render_v2.py` renders locally with an original generated soundtrack. Same locks: no publishing, no paid APIs, drafts only.

@@ -1,0 +1,47 @@
+'use strict';
+// Formato v2 do Conteúdo 2.0: o Reel é uma sequência de cenas com duração própria que alternam 6 tipos de tela.
+// Este módulo só valida o roteiro e aplica as travas; quem desenha é render/render_v2.py.
+const {assessClaims}=require('../scientific-core');
+
+const TIPOS=new Set(['hook','footage','kinetic','objeto','prova','icone','final']);
+const COM_VIDEO=new Set(['hook','footage','prova','icone']);
+const ICONES=new Set(['exo','bolt','sensor']);
+const DUR_MIN=1.5,DUR_MAX=6;
+
+function validateRoteiro(rt){
+ const errors=[],warnings=[];
+ if(!rt||typeof rt!=='object') return {ok:false,errors:['roteiro must be an object'],warnings};
+ if(rt.publishingEnabled!==false) errors.push('publishingEnabled must be false');
+ if(rt.scientificReviewRequired!==true) errors.push('scientificReviewRequired must be true');
+ const cenas=Array.isArray(rt.cenas)?rt.cenas:[];
+ if(!cenas.length) errors.push('cenas must be a non-empty array');
+ let total=0,prev=null;
+ for(const c of cenas){
+  const id=c.id||'?';
+  if(!TIPOS.has(c.tipo)){errors.push(`${id}: unknown tipo ${c.tipo}`);continue;}
+  if(!(c.dur>=DUR_MIN&&c.dur<=DUR_MAX)) warnings.push(`${id}: dur ${c.dur}s outside ${DUR_MIN}-${DUR_MAX}s (rhythm)`);
+  total+=Number(c.dur)||0;
+  if(prev&&prev===c.tipo&&c.tipo!=='footage') warnings.push(`${id}: same tipo as previous scene (${c.tipo})`);
+  prev=c.tipo;
+  if(COM_VIDEO.has(c.tipo)&&!(Array.isArray(c.clip)&&typeof c.clip[0]==='string')) errors.push(`${id}: tipo ${c.tipo} needs clip [arquivo, inicio]`);
+  if((c.tipo==='objeto'||c.tipo==='icone')&&!ICONES.has(c.icone)) errors.push(`${id}: unknown icone ${c.icone}`);
+  if(c.tipo==='prova'){
+   const pmids=String(c.fonte||'').match(/PMID\s*(\d+)/g)?.map(x=>x.replace(/\D/g,''))||[];
+   for(const a of assessClaims([{text:c.achado||'',pmids}],rt.references||[])){
+    if(a.status==='missing_source') errors.push(`${id}: prova without a PMID listed in references: "${a.claim}"`);
+   }
+  }
+ }
+ if(total>90) warnings.push(`total ${total.toFixed(1)}s is long for a Reel`);
+ return {ok:!errors.length,errors,warnings,totalSeconds:Math.round(total*10)/10};
+}
+
+function assertRenderableV2(rt){
+ const v=validateRoteiro(rt);
+ const pending=(rt.cenas||[]).filter(c=>c.revisado!==true).map(c=>c.id);
+ if(pending.length) v.errors.push(`scenes pending human review: ${pending.join(', ')}`);
+ if(v.errors.length){const e=new Error('Roteiro not renderable:\n- '+v.errors.join('\n- '));e.errors=v.errors;throw e;}
+ return v;
+}
+
+module.exports={validateRoteiro,assertRenderableV2,TIPOS,ICONES};
