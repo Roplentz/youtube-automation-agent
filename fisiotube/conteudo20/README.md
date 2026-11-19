@@ -78,3 +78,26 @@ Novo modelo: escreva `draw_<nome>(img, t, box, full, s)` em `render.py`, registr
 - O exemplo em `exemplo/` usa texto original e tempos sintéticos (só para testes).
 
 Testes: `npm run test:fisiotube`.
+
+## Formato v2 — 6 tipos de tela alternados
+
+Para Reels sem narração sincronizada (ou com vídeos de prática/demonstração), o roteiro v2 descreve o vídeo cena a cena, cada uma com sua duração, alternando tipos de tela para manter o ritmo (troca a cada 2,5–4 s, nunca dois tipos iguais seguidos).
+
+| `tipo` | Tela | Campos |
+|---|---|---|
+| `hook` | Vídeo em tela cheia + caixa-manchete (palavra-chave em amarelo) | `clip`, `caixa` (linhas), `chave` |
+| `footage` | Vídeo em tela cheia + legenda revelada palavra por palavra | `clip`, `legendas` `[[t, texto, [chaves]]]` |
+| `kinetic` | Tipografia grande em fundo escuro, palavra por palavra | `texto`, `chave` |
+| `objeto` | Card com moldura cobre, título espaçado e objeto animado (órbita + partículas) | `kicker`, `icone` (`exo`, `bolt`, `sensor`), `legenda`, `chave` |
+| `prova` | Card de evidência (etiqueta, número, achado, PMID) em cima + vídeo embaixo | `clip`, `tag`, `numero`, `achado`, `fonte` (com `PMID n` presente em `references`), `encaixe` (vídeo 16:9 inteiro) |
+| `icone` | Objeto pequeno em cima + vídeo embaixo, com legenda | `clip`, `kicker`, `icone`, `legendas` |
+| `final` | Palavras grandes (ex.: SALVA / ESSE VÍDEO) + rodapé | `palavras`, `rodape` |
+
+Comuns: `id`, `dur` (s), `revisado` (obrigatório para renderizar). `clip` = `[arquivo na pasta, início em s]`; vídeos de celular na vertical são respeitados. Raiz: `trilha` = `gerada` (base original, sem direitos de terceiros), caminho de um áudio seu, ou `nenhuma`; `saida`; `references`.
+
+```
+node fisiotube/conteudo20-cli.js validate-v2 roteiro.json
+node fisiotube/conteudo20-cli.js render-v2 <pasta> [roteiro.json]
+```
+
+`render-v2` recusa se faltar revisão humana, se uma `prova` não tiver PMID listado em `references` ou se um vídeo citado não estiver na pasta. Estilo: Montserrat ExtraBold (cai para Poppins se não houver), grafite #16151A–#201E22, cobre #D9773A. Exemplo: `exemplo/roteiro_v2.json`.

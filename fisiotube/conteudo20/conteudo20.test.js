@@ -115,3 +115,36 @@ test('camera_substituta accepts b-roll video specs',()=>{
  const sb=clone(exemplo);sb.camera_substituta=[[0,5,{video:'broll/ex13.mp4',inicio:0,rotulo:'Exercício 13'}]];
  assert.equal(buildCenas(sb,words,{inicio:0}).cenas.camera_substituta[0][2].video,'broll/ex13.mp4');
 });
+
+// ---- formato v2 ----
+const {validateRoteiro,assertRenderableV2}=require('./roteiro_v2');
+const rv2=require('./exemplo/roteiro_v2.json');
+
+test('v2 example roteiro is valid',()=>{const v=validateRoteiro(rv2);assert.equal(v.ok,true,v.errors.join('; '));assert.equal(v.totalSeconds,26.4);});
+
+test('v2 prova needs a PMID present in references',()=>{
+ const r=clone(rv2);r.cenas[4].fonte='Fulano 2024';
+ assert.match(validateRoteiro(r).errors.join(),/without a PMID/);
+ r.cenas[4].fonte='Fulano · PMID 999';
+ assert.match(validateRoteiro(r).errors.join(),/without a PMID/);
+});
+
+test('v2 video scenes need a clip and objects a known icone',()=>{
+ const r=clone(rv2);delete r.cenas[0].clip;r.cenas[2].icone='robo';
+ const e=validateRoteiro(r).errors.join();
+ assert.match(e,/C1: tipo hook needs clip/);assert.match(e,/C3: unknown icone/);
+});
+
+test('v2 warns on repeated screen type and slow rhythm',()=>{
+ const r=clone(rv2);r.cenas[2]={...clone(r.cenas[1]),id:'C3'};r.cenas[3].dur=8;
+ const w=validateRoteiro(r).warnings.join();
+ assert.match(w,/same tipo as previous/);assert.match(w,/outside 1.5-6s/);
+});
+
+test('v2 render gate: publishing locked and human review required',()=>{
+ const r=clone(rv2);r.cenas[3].revisado=false;
+ assert.throws(()=>assertRenderableV2(r),/pending human review: C4/);
+ const p=clone(rv2);p.publishingEnabled=true;
+ assert.throws(()=>assertRenderableV2(p),/publishingEnabled/);
+ assert.doesNotThrow(()=>assertRenderableV2(rv2));
+});
