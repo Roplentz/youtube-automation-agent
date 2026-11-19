@@ -148,3 +148,13 @@ test('v2 render gate: publishing locked and human review required',()=>{
  assert.throws(()=>assertRenderableV2(p),/publishingEnabled/);
  assert.doesNotThrow(()=>assertRenderableV2(rv2));
 });
+
+test('v2 sales screens: lista needs itens, preco needs price source',()=>{
+ const r=clone(rv2);
+ r.cenas.splice(5,0,{id:'L',tipo:'lista',dur:5,kicker:'VOCÊ RECEBE',titulo:'Curso',itens:[],revisado:true},
+  {id:'P',tipo:'preco',dur:5,kicker:'INSCRIÇÕES',plano:'Vitalício',por:'R$ 950',revisado:true});
+ const e=validateRoteiro(r).errors.join();
+ assert.match(e,/L: lista needs itens/);assert.match(e,/P: preco needs fonte_preco/);
+ r.cenas[5].itens=['Certificado'];r.cenas[6].fonte_preco='site oficial, 19/11/2026';
+ assert.equal(validateRoteiro(r).ok,true);
+});

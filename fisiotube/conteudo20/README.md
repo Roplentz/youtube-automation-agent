@@ -88,12 +88,14 @@ Para Reels sem narração sincronizada (ou com vídeos de prática/demonstraçã
 | `hook` | Vídeo em tela cheia + caixa-manchete (palavra-chave em amarelo) | `clip`, `caixa` (linhas), `chave` |
 | `footage` | Vídeo em tela cheia + legenda revelada palavra por palavra | `clip`, `legendas` `[[t, texto, [chaves]]]` |
 | `kinetic` | Tipografia grande em fundo escuro, palavra por palavra | `texto`, `chave` |
-| `objeto` | Card com moldura cobre, título espaçado e objeto animado (órbita + partículas) | `kicker`, `icone` (`exo`, `bolt`, `sensor`), `legenda`, `chave` |
+| `objeto` | Card com moldura cobre, título espaçado e objeto animado (órbita + partículas) | `kicker`, `icone` (`exo`, `bolt`, `sensor`, `escudo`), `legenda`, `chave` |
 | `prova` | Card de evidência (etiqueta, número, achado, PMID) em cima + vídeo embaixo | `clip`, `tag`, `numero`, `achado`, `fonte` (com `PMID n` presente em `references`), `encaixe` (vídeo 16:9 inteiro) |
 | `icone` | Objeto pequeno em cima + vídeo embaixo, com legenda | `clip`, `kicker`, `icone`, `legendas` |
-| `final` | Palavras grandes (ex.: SALVA / ESSE VÍDEO) + rodapé | `palavras`, `rodape` |
+| `lista` | Lista da oferta: título e itens com check entrando um a um | `kicker`, `titulo`, `itens`, `ritmo` (s entre itens) |
+| `preco` | Preço: selo, plano, valor "de" riscado, valor "por", parcelado e notas | `kicker`, `selo`, `plano`, `de`, `por`, `por_sub`, `parcelado`, `notas`, `fonte_preco` (onde e quando o preço foi conferido — obrigatório) |
+| `final` | Palavras grandes (ex.: SALVA / ESSE VÍDEO, ou um site) + rodapé; encolhem para caber | `palavras`, `rodape` |
 
-Comuns: `id`, `dur` (s), `revisado` (obrigatório para renderizar). `clip` = `[arquivo na pasta, início em s]`; vídeos de celular na vertical são respeitados. Raiz: `trilha` = `gerada` (base original, sem direitos de terceiros), caminho de um áudio seu, ou `nenhuma`; `saida`; `references`.
+Comuns: `id`, `dur` (s), `revisado` (obrigatório para renderizar), `encaixe: true` em `hook`, `footage`, `icone` e `prova` para mostrar um vídeo horizontal inteiro sobre fundo desfocado. `clip` = `[arquivo na pasta, início em s]`; vídeos de celular na vertical são respeitados. Raiz: `trilha` = `gerada` (base original, sem direitos de terceiros), caminho de um áudio seu, ou `nenhuma`; `saida`; `references`.
 
 ```
 node fisiotube/conteudo20-cli.js validate-v2 roteiro.json
