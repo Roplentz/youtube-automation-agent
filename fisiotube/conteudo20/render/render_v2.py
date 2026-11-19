@@ -166,6 +166,12 @@ def icon(name, S=520, phase=0.0):
         g = glow_layer(lambda gd: gd.line(pts, fill=CU2 + (255,), width=26, joint='curve'), (Z, Z), 22); im.alpha_composite(g)
         d.line(pts, fill=hi, width=14, joint='curve')
         d.rounded_rectangle((c - 60, c - 420, c + 60, c - 300), 24, fill=mid)
+    elif name == 'escudo':
+        shield = [(c, 150), (c + 330, 270), (c + 300, 620), (c, 900), (c - 300, 620), (c - 330, 270)]
+        g = glow_layer(lambda gd: gd.polygon(shield, fill=CU + (180,)), (Z, Z), 40); im.alpha_composite(g)
+        d.polygon(shield, fill=dark); d.polygon([(x * 0.9 + c * 0.1, y * 0.9 + 520 * 0.1) for x, y in shield], fill=mid)
+        d.polygon([(x * 0.74 + c * 0.26, y * 0.74 + 520 * 0.26) for x, y in shield], fill=(110, 60, 34, 255))
+        d.line([(c - 130, 520), (c - 30, 630), (c + 160, 400)], fill=hi, width=56, joint='curve')
     return im.resize((S, S), Image.LANCZOS)
 
 ICON_CACHE = {}
@@ -203,14 +209,14 @@ def captions_at(s, tl):
 def screen(s, tl, fr):
     kind = s['tipo']
     if kind in ('hook', 'footage'):
-        img = cover(fr, W, H).convert('RGBA')
+        img = (fit(fr, W, H) if s.get('encaixe') else cover(fr, W, H)).convert('RGBA')
         ov = Image.new('RGBA', img.size, (0, 0, 0, 0)); od = ImageDraw.Draw(ov)
         for y in range(1250, H): od.line((0, y, W, y), fill=(0, 0, 0, int(150 * (y - 1250) / (H - 1250))))
         img.alpha_composite(ov)
         if kind == 'hook':
             d = ImageDraw.Draw(img); k = ease(tl / 0.25)
             lines = s['caixa']; widths = [d.textlength(l, font=fBox) for l in lines]; bw = max(widths) + 80; bh = 76 * len(lines) + 40
-            y0 = 980 - bh / 2 + (1 - k) * 30
+            y0 = (430 if s.get('encaixe') else 980) - bh / 2 + (1 - k) * 30
             d.rounded_rectangle((W / 2 - bw / 2, y0, W / 2 + bw / 2, y0 + bh), 26, fill=(12, 12, 14))
             for i, l in enumerate(lines):
                 x = W / 2 - widths[i] / 2; yy = y0 + 58 + i * 76
@@ -230,7 +236,8 @@ def screen(s, tl, fr):
     if kind == 'icone':
         top = dark_bg().crop((0, 0, W, 760)).convert('RGBA'); d = ImageDraw.Draw(top)
         kicker(d, s['kicker'], W / 2, 90, ease(tl / 0.4)); draw_object(top, s['icone'], tl, W / 2, 420, 300)
-        img = Image.new('RGBA', (W, H)); img.paste(top, (0, 0)); img.paste(cover(fr, W, H - 760, 0.35), (0, 760))
+        img = Image.new('RGBA', (W, H)); img.paste(top, (0, 0))
+        img.paste(fit(fr, W, H - 760) if s.get('encaixe') else cover(fr, W, H - 760, 0.35), (0, 760))
         c = captions_at(s, tl)
         if c: img = reveal_text(img, c[1], c[2], tl - c[0], 1600, fCap, maxw=820)
         return img.convert('RGB')
@@ -255,10 +262,61 @@ def screen(s, tl, fr):
         img = Image.new('RGBA', (W, H)); img.paste(top, (0, 0))
         bot = fit(fr, W, H - 900) if s.get('encaixe') else cover(fr, W, H - 900, 0.4)
         img.paste(bot, (0, 900)); return img.convert('RGB')
+    if kind == 'lista':
+        img = dark_bg().convert('RGBA'); k = ease(tl / 0.35); frame_border(img, k); d = ImageDraw.Draw(img)
+        kicker(d, s['kicker'], W / 2, 170, k)
+        tl_lines = lines_for(d, s['titulo'].split(), M(64, 'ExtraBold'), W - 200)
+        y = H / 2 - (len(tl_lines) * 78 + 70 + len(s['itens']) * 150) / 2 + 40
+        for line in tl_lines:
+            d.text((W / 2, y), ' '.join(line), font=M(64, 'ExtraBold'), fill=mix(BG1, WH, k), anchor='mm'); y += 78
+        y += 70; per = s.get('ritmo', 0.55)
+        for i, item in enumerate(s['itens']):
+            a = ease((tl - 0.6 - i * per) / 0.3)
+            if a <= 0: continue
+            dx = (1 - a) * 40
+            d.rounded_rectangle((100 + dx, y - 38, 176 + dx, y + 38), 20, fill=mix(BG1, CU, a))
+            d.line([(127 + dx, y + 2), (140 + dx, y + 16), (162 + dx, y - 14)], fill=mix(BG1, (24, 18, 14), a), width=8, joint='curve')
+            fI = M(50, 'SemiBold'); ls = lines_for(d, item.split(), fI, W - 320)
+            for j, line in enumerate(ls):
+                d.text((210 + dx, y + j * 60 - (len(ls) - 1) * 30), ' '.join(line), font=fI, fill=mix(BG1, WH, a), anchor='lm')
+            y += 150
+        return img.convert('RGB')
+    if kind == 'preco':
+        img = dark_bg().convert('RGBA'); k = ease(tl / 0.35); frame_border(img, k); d = ImageDraw.Draw(img)
+        kicker(d, s['kicker'], W / 2, 170, k)
+        if s.get('selo'):
+            tw = d.textlength(s['selo'], font=fTag) + 44
+            tg = Image.new('RGBA', (int(tw), 58), (0, 0, 0, 0)); tgd = ImageDraw.Draw(tg)
+            tgd.rounded_rectangle((0, 0, tw - 1, 57), 12, fill=YEL + (255,)); tgd.text((tw / 2, 29), s['selo'], font=fTag, fill=(20, 16, 14), anchor='mm')
+            tg = tg.rotate(-3, expand=True, resample=Image.BICUBIC); tg.putalpha(tg.split()[3].point(lambda v: int(v * k)))
+            img.alpha_composite(tg, (int(W / 2 - tg.width / 2), 400)); d = ImageDraw.Draw(img)
+        d.text((W / 2, 590), s['plano'], font=M(60, 'ExtraBold'), fill=mix(BG1, WH, k), anchor='mm')
+        ka = ease((tl - 0.5) / 0.3)
+        if s.get('de'):
+            fde = M(52, 'SemiBold'); tw = d.textlength(s['de'], font=fde)
+            d.text((W / 2, 760), s['de'], font=fde, fill=mix(BG1, MUT, ka), anchor='mm')
+            d.line((W / 2 - tw / 2 - 10, 764, W / 2 - tw / 2 - 10 + (tw + 20) * ease((tl - 0.9) / 0.35), 756), fill=mix(BG1, CU, ka), width=6)
+        kb = ease((tl - 1.3) / 0.35); sc = 0.85 + 0.15 * kb
+        fp = M(int(150 * sc), 'ExtraBold'); por = s['por']
+        while d.textlength(por, font=fp) > W - 140: fp = M(fp.size - 6, 'ExtraBold')
+        d.text((W / 2, 960), por, font=fp, fill=mix(BG1, CU, kb), anchor='mm')
+        d.text((W / 2, 1080), s.get('por_sub', ''), font=fBodyB, fill=mix(BG1, WH, kb), anchor='mm')
+        kc = ease((tl - 2.0) / 0.35)
+        if s.get('parcelado'):
+            d.text((W / 2, 1200), s['parcelado'], font=M(56, 'ExtraBold'), fill=mix(BG1, WH, kc), anchor='mm')
+        kd = ease((tl - 2.8) / 0.35); y = 1390
+        for line in s.get('notas', []):
+            for ln in lines_for(d, line.split(), fKick, W - 220):
+                d.text((W / 2, y), ' '.join(ln), font=fKick, fill=mix(BG1, (200, 194, 198), kd), anchor='mm'); y += 48
+            y += 16
+        return img.convert('RGB')
     if kind == 'final':
         img = dark_bg(); d = ImageDraw.Draw(img); w1, w2 = s['palavras']
-        k1 = ease(tl / 0.2); d.text((W / 2, 850 + (1 - k1) * 30), w1, font=fHuge, fill=mix(BG1, CU, k1), anchor='mm')
-        k2 = ease((tl - 0.7) / 0.2); d.text((W / 2, 1010 + (1 - k2) * 30), w2, font=M(96, 'ExtraBold'), fill=mix(BG1, WH, k2), anchor='mm')
+        f1 = fHuge; f2 = M(96, 'ExtraBold')
+        while d.textlength(w1, font=f1) > W - 120: f1 = M(f1.size - 6, 'ExtraBold')
+        while d.textlength(w2, font=f2) > W - 120: f2 = M(f2.size - 4, 'ExtraBold')
+        k1 = ease(tl / 0.2); d.text((W / 2, 850 + (1 - k1) * 30), w1, font=f1, fill=mix(BG1, CU, k1), anchor='mm')
+        k2 = ease((tl - 0.7) / 0.2); d.text((W / 2, 1010 + (1 - k2) * 30), w2, font=f2, fill=mix(BG1, WH, k2), anchor='mm')
         k3 = ease((tl - 1.4) / 0.4); d.text((W / 2, 1700), s['rodape'], font=fSmall, fill=mix(BG1, MUT, k3), anchor='mm')
         return img
     raise ValueError(kind)
