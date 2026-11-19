@@ -45,15 +45,20 @@ A pasta do passo 6 precisa conter `storyboard.json`, `cenas.json`, `words.json` 
 ```
 
 Ações de gatilho: `keyframe_hz`, `rotulo` (`[título, subtítulo]`), `chip`, `chips_fim`, `evento` (`freq_sobe|forca|fadiga`), `item` (modelo `cartao`).
-Cenas consecutivas do mesmo modelo viram um bloco contínuo; o mesmo modelo não pode reaparecer depois de outro.
+Cenas consecutivas do mesmo modelo viram um bloco contínuo; `"novo_bloco": true` abre outro bloco (ex.: dois cartões seguidos). `osciloscopio` e `forca_fadiga` só podem aparecer uma vez por vídeo.
+Correções de legenda: `correcoes_previstas` aceita `"palavra"` (global) ou `"palavra@tempo"` (só aquela ocorrência, tempo da transcrição); valor vazio remove a palavra.
+`"camera_substituta": [[t0, t1, {"video": "broll/ex13.mp4", "inicio": 0, "rotulo": "Exercício 13"}]]` toca um vídeo de apoio (ex.: demonstração de exercício) nesses intervalos, inteiro em 16:9 sobre fundo desfocado; com um número no lugar do objeto, `[[t0, t1, t_quadro]]` no storyboard mostra, nesses intervalos, um quadro parado do apresentador (de `t_quadro`, escolhido numa pausa com boca fechada) com zoom lento — mantém a pessoa na tela quando o original corta para slides ou tem tarja.
+Gancho com `"fundo": "desfocado"` desfoca o vídeo atrás do título (útil quando há tarja ou marca no início da gravação).
 `layout: "full"` e `--sem-camera` (trechos sem apresentador, como slides) mostram o painel em tela cheia.
 
 ## Modelos de cena (`render/render.py`)
 
 - `osciloscopio` — pulsos elétricos + curva de tensão muscular **calculada** (somação de abalos → tetania conforme a frequência).
 - `forca_fadiga` — frequência sobe; barras de força e fadiga.
+- `equacao` — "A + B = resultado"; eventos `a`, `b`, `resultado`; parâmetros `kicker`, `a`, `b`, `resultado`.
+- `numero` — número grande que conta até `valor` a partir do evento `conta`; `prefixo`, `unidade`, `rotulo`, itens.
 - `cartao` — genérico: kicker, título, itens que entram no tempo da fala e rodapé com a fonte (`Fonte: PMID …`, preenchido a partir de `claims`).
-- `gancho` e `cta` — abertura e fechamento.
+- `gancho` e `cta` — abertura e fechamento. No `cta`, `botao` troca o texto do botão (padrão "Salvar vídeo", com seta) e um `destaque` longo, como um site, encolhe para caber.
 
 Novo modelo: escreva `draw_<nome>(img, t, box, full, s)` em `render.py`, registre em `DRAW` e em `MODELOS` (`storyboard.js`).
 

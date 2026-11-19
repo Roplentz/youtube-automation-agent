@@ -1,7 +1,7 @@
 """Renderizador 'Conteúdo 2.0' — lê cenas.json (saída do agente diretor) + words.json
 (transcrição palavra a palavra) e gera o vídeo vertical 1080x1920.
 Uso: python3 render.py [preview_t ...]   (sem args = render completo)"""
-import json, math, os, subprocess, sys
+import json, math, os, re, subprocess, sys
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -23,7 +23,7 @@ def F(name, size):
         if d and os.path.exists(os.path.join(d, name)): return ImageFont.truetype(os.path.join(d, name), size)
     sys.exit(f'Fonte {name} não encontrada. Instale Poppins ou defina CONTEUDO20_FONT_DIR.')
 fBig = F('Poppins-Bold.ttf', 150); fH = F('Poppins-Bold.ttf', 58); fM = F('Poppins-Medium.ttf', 36)
-fS = F('Poppins-Medium.ttf', 28); fCap = F('Poppins-Bold.ttf', 70); fHook = F('Poppins-Bold.ttf', 112)
+fS = F('Poppins-Medium.ttf', 28); fB = F('Poppins-Bold.ttf', 44); fCap = F('Poppins-Bold.ttf', 70); fHook = F('Poppins-Bold.ttf', 112)
 
 def ease(x): x = max(0, min(1, x)); return 1 - (1 - x) ** 3
 def lerp(a, b, k): return a + (b - a) * k
@@ -36,8 +36,10 @@ words = []
 for w in json.load(open('words.json', encoding='utf-8')):
     t = w['s'] - SRC0
     if 0 <= t < MAIN - 0.05:
-        txt = FIX.get(w['w'].strip(), w['w'].strip())
-        if txt.startswith('-') and words: words[-1]['w'] += txt; continue
+        raw = w['w'].strip()
+        txt = FIX.get(f"{raw}@{w['s']}", FIX.get(raw, raw))   # correção pontual (palavra@tempo) ou global
+        if not txt: continue                                   # correção vazia remove a palavra da legenda
+        if (txt.startswith('-') or re.match(r'^[.,]\d', txt)) and words: words[-1]['w'] += txt; continue
         words.append(dict(w=txt, s=t, e=w['e'] - SRC0))
 chunks, cur = [], []
 for i, w in enumerate(words):
@@ -201,28 +203,142 @@ def draw_cartao(img, t, box, full, s):
     for line in wrap(d, s.get('titulo', ''), fH, x1 - x0 - 2 * pad):
         d.text((x0 + pad, yy + 30), line, font=fH, fill=WH, anchor='lm'); yy += 70
     yy += 30
-    for t0, txt in s.get('itens', []):
-        a = ease((t - t0) / 0.3)
-        if a <= 0: continue
-        d.ellipse((x0 + pad, yy + 22 - 9 + (1 - a) * 20, x0 + pad + 18, yy + 22 + 9 + (1 - a) * 20), fill=mix(CARD, OR, a))
-        for j, line in enumerate(wrap(d, txt, fM, x1 - x0 - 2 * pad - 50)):
-            d.text((x0 + pad + 44, yy + 22 + j * 48 + (1 - a) * 20), line, font=fM, fill=mix(CARD, WH, a), anchor='lm')
-        yy += 48 * max(1, len(wrap(d, txt, fM, x1 - x0 - 2 * pad - 50))) + 28
+    draw_itens(d, t, s.get('itens', []), x0 + pad, yy, x1 - x0 - 2 * pad)
     if s.get('fonte'):
         d.text((x0 + pad, y1 - pad), s['fonte'], font=fS, fill=MUT, anchor='ls')
 
-DRAW = {'osciloscopio': draw_osc_full, 'forca_fadiga': draw_ff, 'cartao': draw_cartao}
+def draw_itens(d, t, itens, x, yy, width):
+    for t0, txt in itens:
+        a = ease((t - t0) / 0.3)
+        if a <= 0: continue
+        lines = wrap(d, txt, fM, width - 50)
+        d.ellipse((x, yy + 13 + (1 - a) * 20, x + 18, yy + 31 + (1 - a) * 20), fill=mix(CARD, OR, a))
+        for j, line in enumerate(lines):
+            d.text((x + 44, yy + 22 + j * 48 + (1 - a) * 20), line, font=fM, fill=mix(CARD, WH, a), anchor='lm')
+        yy += 48 * max(1, len(lines)) + 28
+    return yy
+
+def draw_equacao(img, t, box, full, s):
+    """A + B = resultado. Eventos: a, b, resultado (tempos da fala)."""
+    d = ImageDraw.Draw(img); x0, y0, x1, y1 = box; pad = 50
+    rr(d, box, 36, fill=CARD, outline=LINE, width=2)
+    ev = s.get('eventos', {}); cx = (x0 + x1) / 2; w = x1 - x0 - 2 * pad
+    if s.get('kicker'): d.text((x0 + pad, y0 + pad + 10), s['kicker'].upper(), font=fS, fill=OR2, anchor='lm')
+    bh = 175 if full else 118; gap = 120 if full else 70
+    yy = y0 + pad + (130 if full else 60)
+    def termo(key, txt, y, destaque=False):
+        a = ease((t - ev.get(key, 1e9)) / 0.35)
+        if a <= 0: return
+        dy = (1 - a) * 30
+        if destaque:
+            rr(d, (x0 + pad, y + dy, x1 - pad, y + bh + 30 + dy), 30, fill=mix(CARD, OR, a))
+            d.text((cx, y + (bh + 30) / 2 + dy), txt, font=fH, fill=mix(CARD, WH, a), anchor='mm')
+        else:
+            rr(d, (x0 + pad, y + dy, x1 - pad, y + bh + dy), 28, fill=mix(CARD, (34, 31, 36), a), outline=mix(CARD, LINE, a), width=2)
+            lines = wrap(d, txt, fB, w - 60)
+            for j, line in enumerate(lines):
+                d.text((cx, y + bh / 2 + (j - (len(lines) - 1) / 2) * 50 + dy), line, font=fB, fill=mix(CARD, WH, a), anchor='mm')
+    def sinal(key, y, eq=False):
+        a = ease((t - ev.get(key, 1e9)) / 0.3)
+        if a <= 0: return
+        c = mix(CARD, OR, a); r = 22
+        if eq:
+            d.rectangle((cx - r, y - 12, cx + r, y - 4), fill=c); d.rectangle((cx - r, y + 4, cx + r, y + 12), fill=c)
+        else:
+            d.rectangle((cx - r, y - 4, cx + r, y + 4), fill=c); d.rectangle((cx - 4, y - r, cx + 4, y + r), fill=c)
+    termo('a', s.get('a', ''), yy)
+    sinal('b', yy + bh + gap / 2)
+    termo('b', s.get('b', ''), yy + bh + gap)
+    sinal('resultado', yy + 2 * bh + gap * 1.5, eq=True)
+    termo('resultado', s.get('resultado', ''), yy + 2 * bh + 2 * gap, destaque=True)
+
+def draw_numero(img, t, box, full, s):
+    """Número grande que conta até `valor` a partir do evento `conta`; unidade, rótulo e itens."""
+    d = ImageDraw.Draw(img); x0, y0, x1, y1 = box; pad = 50
+    rr(d, box, 36, fill=CARD, outline=LINE, width=2)
+    ev = s.get('eventos', {}); cx = (x0 + x1) / 2
+    if s.get('kicker'): d.text((x0 + pad, y0 + pad + 10), s['kicker'].upper(), font=fS, fill=OR2, anchor='lm')
+    k = ease((t - ev.get('conta', 1e9)) / 1.4)
+    yb = y0 + pad + (230 if full else 170)
+    if k > 0:
+        v = f"{round(s.get('valor', 0) * k):,}".replace(',', '.')
+        pre = s.get('prefixo', '')
+        num = pre + v; un = s.get('unidade', '')
+        wn = d.textlength(num, font=fBig); wu = d.textlength(' ' + un, font=fH) if un else 0
+        xs = cx - (wn + wu) / 2
+        d.text((xs, yb), num, font=fBig, fill=OR, anchor='ls')
+        if un: d.text((xs + wn, yb - 12), ' ' + un, font=fH, fill=WH, anchor='ls')
+        if s.get('rotulo'): d.text((cx, yb + 60), s['rotulo'], font=fM, fill=MUT, anchor='mm')
+    draw_itens(d, t, s.get('itens', []), x0 + pad, yb + 130, x1 - x0 - 2 * pad)
+
+DRAW = {'osciloscopio': draw_osc_full, 'forca_fadiga': draw_ff, 'cartao': draw_cartao,
+        'equacao': draw_equacao, 'numero': draw_numero}
 
 def panel(img, t, box, full):
     s = next((s for s in C['cenas'] if s['modelo'] in DRAW and s['t0'] <= t < s['t1']), None)
     if s: DRAW[s['modelo']](img, t, box, full, s)
 
-def cam_ok(t): return not any(a <= t < b for a, b in C['camera_indisponivel'])
+# Trechos sem apresentador (slides, tarjas): quadro parado dela com zoom lento, em vez de esconder a pessoa.
+SUBS = C.get('camera_substituta', [])   # [[t0, t1, t_do_quadro], ...] em tempo do vídeo final
+STILLS = {}
+def still_at(ts):
+    if ts not in STILLS:
+        b = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(SRC0 + ts), '-i', C['fonte']['arquivo'], '-frames:v', '1',
+                            '-vf', 'scale=1920:1080', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True, check=True).stdout
+        STILLS[ts] = Image.frombuffer('RGB', (1920, 1080), b)
+    return STILLS[ts]
+def sub_at(t): return next((x for x in SUBS if x[0] <= t < x[1]), None)
+
+# B-roll: [t0, t1, {"video": "broll/ex13.mp4", "inicio": 0, "rotulo": "Exercício 13"}] toca outro vídeo no lugar da câmera.
+PREVIEW = False
+READERS = {}
+def broll_frame(key, spec, off):
+    n = 1920 * 1080 * 3
+    if PREVIEW:
+        b = subprocess.run(['ffmpeg', '-v', 'error', '-ss', str(off), '-i', spec['video'], '-frames:v', '1', '-vf', 'scale=1920:1080',
+                            '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], capture_output=True).stdout
+        return Image.frombuffer('RGB', (1920, 1080), b) if len(b) >= n else None
+    r = READERS.get(key)
+    if r is None:
+        r = READERS[key] = {'p': subprocess.Popen(['ffmpeg', '-v', 'error', '-ss', str(off), '-i', spec['video'], '-vf', f'fps={FPS},scale=1920:1080',
+                                                   '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-'], stdout=subprocess.PIPE), 'last': None}
+    b = r['p'].stdout.read(n)
+    if len(b) == n: r['last'] = Image.frombuffer('RGB', (1920, 1080), b)
+    return r['last']
+
+def fit_broll(fr, w, h, rotulo=None):
+    """Quadro 16:9 inteiro (exercício sem corte) sobre fundo desfocado do próprio vídeo."""
+    k = max(w / 1920, h / 1080); cw, ch = w / k, h / k
+    bg = fr.crop(((1920 - cw) / 2, (1080 - ch) / 2, (1920 + cw) / 2, (1080 + ch) / 2)).resize((w, h)).filter(ImageFilter.GaussianBlur(30))
+    bg = Image.blend(bg, Image.new('RGB', (w, h), (8, 8, 10)), 0.45)
+    fh = round(w * 1080 / 1920); y = 700 if h == H else 40
+    bg.paste(fr.resize((w, fh), Image.LANCZOS), (0, y))
+    if rotulo:
+        d = ImageDraw.Draw(bg); tw = d.textlength(rotulo, font=fS)
+        rr(d, (24, y + fh - 64, 24 + tw + 40, y + fh - 20), 22, fill=(14, 13, 16))
+        d.text((44, y + fh - 42), rotulo, font=fS, fill=OR2, anchor='lm')
+    return bg
+
+def cam_img(fr, t, w, h):
+    sub = sub_at(t)
+    if not sub: return crop_cam(fr, w, h)
+    if isinstance(sub[2], dict):
+        spec = sub[2]
+        b = broll_frame(SUBS.index(sub), spec, spec.get('inicio', 0) + t - sub[0])
+        return fit_broll(b or fr, w, h, spec.get('rotulo'))
+    img = crop_cam(still_at(sub[2]), w, h)
+    k = 1 + 0.08 * (t - sub[0]) / max(0.1, sub[1] - sub[0])
+    cw, ch = w / k, h / k; x0, y0 = (w - cw) / 2, (h - ch) / 2
+    return img.crop((x0, y0, x0 + cw, y0 + ch)).resize((w, h), Image.LANCZOS)
+
+def cam_ok(t): return sub_at(t) is not None or not any(a <= t < b for a, b in C['camera_indisponivel'])
 
 def frame(t, fr):
     hook = SC['gancho']
     if t < hook['t1']:
-        img = crop_cam(fr, W, H)
+        img = cam_img(fr, t, W, H)
+        if hook.get('fundo') == 'desfocado':   # esconde tarjas/marcas atrás do título
+            img = Image.blend(img.filter(ImageFilter.GaussianBlur(22)), Image.new('RGB', (W, H), (8, 8, 10)), 0.35)
         ov = Image.new('RGBA', (W, H)); od = ImageDraw.Draw(ov)
         for y in range(900): od.line((0, y, W, y), fill=(8, 8, 10, int(210 * (1 - y / 900))))
         img = Image.alpha_composite(img.convert('RGBA'), ov).convert('RGB'); d = ImageDraw.Draw(img)
@@ -236,7 +352,7 @@ def frame(t, fr):
         return None
     img = Image.new('RGB', (W, H), BG)
     if cam_ok(t):
-        img.paste(crop_cam(fr, W, H - SPLIT), (0, SPLIT))
+        img.paste(cam_img(fr, t, W, H - SPLIT), (0, SPLIT))
         d = ImageDraw.Draw(img); d.rectangle((0, SPLIT - 4, W, SPLIT), fill=OR)
         panel(img, t, (40, 40, W - 40, SPLIT - 40), False)
         draw_caption(img, t, 1640)
@@ -249,18 +365,25 @@ def cta(t, last):
     s = SC['cta']; k = ease((t - s['t0']) / 0.4)
     bg = last.filter(ImageFilter.GaussianBlur(28 * k))
     img = Image.blend(bg, Image.new('RGB', (W, H), (8, 8, 10)), 0.55 * k); d = ImageDraw.Draw(img)
+    fD = fHook; size = 112
+    while d.textlength(s['destaque'], font=fD) > W - 100 and size > 60:   # destaque longo (ex.: um site) encolhe para caber
+        size -= 4; fD = F('Poppins-Bold.ttf', size)
     for i, (txt, col) in enumerate([(s['linha1'], WH), (s['destaque'], OR), (s['linha2'], WH)]):
         kk = ease((t - s['t0'] - 0.1 * i) / 0.35)
-        d.text((W / 2, 700 + i * 120 + (1 - kk) * 40), txt, font=fHook if col == OR else fH, fill=mix((20, 20, 20), col, kk), anchor='mm')
+        d.text((W / 2, 700 + i * 120 + (1 - kk) * 40), txt, font=fD if col == OR else fH, fill=mix((20, 20, 20), col, kk), anchor='mm')
     kb = ease((t - s['t0'] - 0.5) / 0.35); pulse = 1 + 0.03 * math.sin((t - s['t0']) * 6)
-    bw, bh = 520 * pulse, 120 * pulse
+    botao = s.get('botao', 'Salvar vídeo'); seta = botao == 'Salvar vídeo'
+    bw, bh = (d.textlength(botao, font=fH) + (150 if seta else 110)) * pulse, 120 * pulse
     rr(d, (W / 2 - bw / 2, 1120 - bh / 2, W / 2 + bw / 2, 1120 + bh / 2), 60, fill=mix((20, 20, 20), OR, kb))
-    d.text((W / 2 - 25, 1120), 'Salvar vídeo', font=fH, fill=mix((20, 20, 20), WH, kb), anchor='mm'); arrow(d, W / 2 + 205, 1118, 16, mix((20, 20, 20), WH, kb), up=False)
+    tw = d.textlength(botao, font=fH)
+    d.text((W / 2 - (25 if seta else 0), 1120), botao, font=fH, fill=mix((20, 20, 20), WH, kb), anchor='mm')
+    if seta: arrow(d, W / 2 - 25 + tw / 2 + 30, 1118, 16, mix((20, 20, 20), WH, kb), up=False)
     d.text((W / 2, 1720), s['rodape'], font=fS, fill=mix((20, 20, 20), MUT, kb), anchor='mm')
     return img
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:   # prévia de quadros
+        PREVIEW = True
         want = [float(a) for a in sys.argv[1:]]; frs = {}
         for i, fr in enumerate(source_frames()):
             t = i / FPS
@@ -282,4 +405,5 @@ if __name__ == '__main__':
         im = frame(t, fr); enc.stdin.write(im.tobytes()); last = im; n += 1
     while n / FPS < TOTAL:
         enc.stdin.write(cta(n / FPS, last).tobytes()); n += 1
+    for r in READERS.values(): r['p'].kill()
     enc.stdin.close(); enc.wait(); print('ok', n, 'frames')
