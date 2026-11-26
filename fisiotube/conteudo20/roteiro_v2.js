@@ -3,9 +3,9 @@
 // Este módulo só valida o roteiro e aplica as travas; quem desenha é render/render_v2.py.
 const {assessClaims}=require('../scientific-core');
 
-const TIPOS=new Set(['hook','footage','kinetic','objeto','prova','icone','final']);
+const TIPOS=new Set(['hook','footage','kinetic','objeto','prova','icone','lista','preco','final']);
 const COM_VIDEO=new Set(['hook','footage','prova','icone']);
-const ICONES=new Set(['exo','bolt','sensor']);
+const ICONES=new Set(['exo','bolt','sensor','escudo']);
 const DUR_MIN=1.5,DUR_MAX=6;
 
 function validateRoteiro(rt){
@@ -25,6 +25,11 @@ function validateRoteiro(rt){
   prev=c.tipo;
   if(COM_VIDEO.has(c.tipo)&&!(Array.isArray(c.clip)&&typeof c.clip[0]==='string')) errors.push(`${id}: tipo ${c.tipo} needs clip [arquivo, inicio]`);
   if((c.tipo==='objeto'||c.tipo==='icone')&&!ICONES.has(c.icone)) errors.push(`${id}: unknown icone ${c.icone}`);
+  if(c.tipo==='lista'&&!(Array.isArray(c.itens)&&c.itens.length)) errors.push(`${id}: lista needs itens`);
+  if(c.tipo==='preco'){
+   if(!c.por||!c.plano) errors.push(`${id}: preco needs plano and por`);
+   if(!c.fonte_preco) errors.push(`${id}: preco needs fonte_preco (where and when the price was checked)`);
+  }
   if(c.tipo==='prova'){
    const pmids=String(c.fonte||'').match(/PMID\s*(\d+)/g)?.map(x=>x.replace(/\D/g,''))||[];
    for(const a of assessClaims([{text:c.achado||'',pmids}],rt.references||[])){
