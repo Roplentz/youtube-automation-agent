@@ -158,3 +158,8 @@ test('v2 sales screens: lista needs itens, preco needs price source',()=>{
  r.cenas[5].itens=['Certificado'];r.cenas[6].fonte_preco='site oficial, 19/11/2026';
  assert.equal(validateRoteiro(r).ok,true);
 });
+
+test('storyboard keeps study year, journal and design from the draft',()=>{
+ const sb=createStoryboard({topic:'x',draft:{references:[{pmid:'1',title:'T',year:2020,journal:'J',design:'ecr'}]}});
+ assert.equal(sb.references[0].design,'ecr');assert.equal(sb.references[0].year,2020);assert.equal(sb.references[0].journal,'J');
+});

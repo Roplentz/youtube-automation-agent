@@ -15,7 +15,7 @@ function slugify(text){
 function createStoryboard({topic,draft,formato='reel',marca='FisioTube',slug}={}){
  if(typeof topic!=='string'||!topic.trim()) throw new Error('topic is required');
  if(!['reel','vsl'].includes(formato)) throw new Error('formato must be reel or vsl');
- const references=(draft?.references||[]).map(r=>({pmid:String(r.pmid),doi:r.doi||null,title:r.title||'',url:r.url||null}));
+ const references=(draft?.references||[]).map(r=>({pmid:String(r.pmid),doi:r.doi||null,title:r.title||'',url:r.url||null,year:r.year??null,journal:r.journal||null,design:r.design||null}));
  return {
   titulo:topic.trim(),slug:slug||slugify(topic),formato,duracao_alvo:formato==='vsl'?120:55,marca,
   status:'DRAFT_REVIEW_REQUIRED',scientificReviewRequired:true,publishingEnabled:false,
