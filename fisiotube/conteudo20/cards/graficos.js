@@ -26,7 +26,7 @@ function ticksLineares(min,max,alvo=5){
  const mag=10**Math.floor(Math.log10(passoBruto));
  const passo=[1,2,2.5,5,10].map(m=>m*mag).find(p=>p>=passoBruto)||10*mag;
  const out=[];
- for(let v=Math.ceil(min/passo)*passo;v<=max+1e-9;v+=passo) out.push(Math.round(v/passo)*passo);
+ for(let v=Math.ceil(min/passo)*passo;v<=max+1e-9;v+=passo) out.push(Math.round(v/passo)*passo+0); // +0 evita "-0"
  return out;
 }
 function ticksLog(min,max){

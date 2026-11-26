@@ -25,6 +25,8 @@ test('domain always contains the null line',()=>{
 });
 test('ticks are round numbers',()=>{
  assert.deepEqual(ticksLineares(0,10),[0,2.5,5,7.5,10]);
+ assert.ok(!graficoEfeito({estimativa:0.36,ic:[0.16,0.57],medida:'DMP'}).includes('>-0<'));
+ assert.ok(!Object.is(ticksLineares(-0.08,0.65)[0],-0));
  assert.deepEqual(ticksLog(0.4,3),[0.5,1,2]);
 });
 test('pt-BR number format',()=>{assert.equal(fmt(1.65,2),'1,65');assert.equal(fmt(4224),'4.224');});
