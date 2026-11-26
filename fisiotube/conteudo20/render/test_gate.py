@@ -49,5 +49,18 @@ class SeloTest(unittest.TestCase):
         self.assertEqual(selo_cena({'fonte': 'PMID 1'}, [{'pmid': '1', 'design': 'ecr', 'nivel': 'D'}])[0], 'D')
 
 
+
+class DadosTest(unittest.TestCase):
+    def test_dados_needs_pmid(self):
+        doc = {**OK, 'cenas': [{'id': 'd', 'tipo': 'dados', 'fonte': 'sem fonte', 'revisado': True}]}
+        self.assertTrue(any('dados without a PMID' in e for e in check_roteiro(doc)))
+
+    def test_tokens_shared_with_html(self):
+        here = os.path.dirname(os.path.abspath(__file__))
+        tokens = json.load(open(os.path.join(here, '..', '..', 'design', 'tokens.json'), encoding='utf-8'))
+        self.assertEqual(tokens['cor']['acento'], '#D9773A')
+        self.assertEqual(sorted(tokens['nivel']), ['A', 'B', 'C', 'D'])
+
+
 if __name__ == '__main__':
     unittest.main()
