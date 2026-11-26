@@ -344,6 +344,8 @@ if __name__ == '__main__':
     want = [float(a) for a in sys.argv[2:]]
     enc = None
     if not want:
+        from gate import enforce
+        enforce(sys.argv[1] if len(sys.argv) > 1 else 'roteiro.json', 'roteiro')   # trava também fora do CLI
         trilha = RT.get('trilha', 'gerada')
         if trilha == 'gerada': music(); aud = ['-i', 'trilha.wav']
         elif trilha == 'nenhuma': aud = ['-f', 'lavfi', '-i', 'anullsrc=r=48000:cl=mono']

@@ -393,6 +393,8 @@ if __name__ == '__main__':
         for w in want:
             im = frs.get(w) or cta(w, last); im.save(f'prev_{w:05.1f}.jpg', quality=85)
         sys.exit()
+    from gate import enforce
+    enforce('storyboard.json', 'storyboard')   # render completo exige revisão humana, mesmo fora do CLI
     enc = subprocess.Popen(['ffmpeg', '-v', 'error', '-y', '-f', 'rawvideo', '-pix_fmt', 'rgb24', '-s', f'{W}x{H}', '-r', str(FPS), '-i', '-',
                             '-ss', str(SRC0), '-t', str(MAIN), '-i', C['fonte']['arquivo'],
                             '-filter_complex', f'[1:a]afade=t=out:st={MAIN-0.25}:d=0.25,apad=whole_dur={TOTAL}[a]',
