@@ -29,3 +29,15 @@ Vertical explainer videos where on-screen panels are triggered by words in the p
 
 ### Phase 2.1 — Format v2 (alternating screen types)
 Scene-by-scene Reels that rotate seven screen types (hook, footage, kinetic typography, object card, evidence card, icon split, final words) for footage without synced narration. `roteiro_v2.js` validates the script (an evidence card must cite a PMID listed in `references`) and gates rendering on human review; `render/render_v2.py` renders locally with an original generated soundtrack. Same locks: no publishing, no paid APIs, drafts only.
+
+### Phase 2.2 — Evidence, design and data (Nov 2026)
+- PubMed filters (dates, study types), study year/journal/design, evidence level A–D with reviewer override, `referencias` and `conferir` commands; DOI taken from the article itself.
+- Retention checks in `validate-v2` (hook ≤ 3 s, total ≤ 60 s, send-oriented CTA).
+- HTML/CSS cards captured with Playwright, shared design tokens (`fisiotube/design/tokens.json`), `dados` screen (icon array, effect with 95% CI, before/after).
+- Review gate repeated inside the Python renderers; FisioTube tests run in CI.
+
+### Phase 2.3 — Avatar Reels and b-roll (Nov 2026)
+- Reels can be voiced and presented by the author's cloned voice and avatar; the talking-head video enters the same pipeline as a recording.
+- `corrigir` fixes Whisper splits and storyboard-defined `correcoes_transcricao` before sync and captions.
+- Animated b-roll (`camera_substituta`): crossfade, slow zoom, sliding label; AI clips labelled as illustration.
+- Worked example: `fisiotube/conteudo20/exemplo/ozempic/`.

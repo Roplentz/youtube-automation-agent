@@ -147,3 +147,17 @@ São avisos, não erros: o render continua liberado.
 Cores, fontes, raios, espaços e movimento ficam em `fisiotube/design/tokens.json`, lido pelos cards e pelo `render_v2.py`. As cores de nível (A verde, B azul, C âmbar, D vermelho) são reservadas para evidência. Títulos em Montserrat, textos e números em Inter (tabulares); fontes em `render/fonts` ou `CONTEUDO20_FONT_DIR` são carregadas também nos cards.
 
 Os números dos gráficos vêm do estudo e entram na `conferencia.md`; a diferença do `antes_depois` é calculada, nunca digitada. `exemplo/roteiro_v2.json` traz um `efeito` com os dados reais da revisão Cochrane (OR 1,65; IC 95% 1,21 a 2,25); `exemplo/dados_ilustrativo.json` mostra os três gráficos com números fictícios, só para layout.
+
+## Reel com avatar (voz e imagem clonadas)
+
+Fluxo usado no exemplo `exemplo/ozempic/` (Ozempic, massa magra e EECI):
+
+1. **Roteiro e storyboard** como de costume (`storyboard`, `referencias`, `validate`), com `claims` e PMIDs.
+2. **Voz:** o teleprompter vira áudio com a voz clonada do autor no ElevenLabs.
+3. **Imagem:** uma foto 16:9 da cabeça aos ombros, recortada da foto original sem fundo inventado por IA. Só o centro aparece no Reel; as laterais podem ser desfocadas. Anote o centro do rosto para o `--cx` do `sync`.
+4. **Avatar:** foto + áudio viram o vídeo falado (HeyGen Avatar 6; o turbo custa metade). Esse vídeo entra como `src.mp4`.
+5. **Transcrição e correção:** `transcribe` e depois `corrigir <storyboard.json> <words.json>`. O comando junta o que o Whisper quebra ("meta" + "-análise" = "metanálise", "35" + "%") e aplica `correcoes_transcricao` do storyboard (`{"o zempique": "Ozempic", "aquilo@2.82": "quilo"}`; várias palavras viram uma; `@tempo` limita à ocorrência perto daquele segundo). O original fica em `words_bruto.json`. O `sync` aplica as mesmas correções em memória antes de procurar os gatilhos.
+6. **Vídeo de apoio:** `camera_substituta` troca o apresentador por exercícios nas falas correspondentes, com fusão, zoom lento e rótulo. Prefira gravações próprias (aqui, o Exercício 49 do curso Eletropilates). Clipes gerados por IA levam "ilustração (IA)" no rótulo.
+7. **Revisão e render:** prévias de quadros, revisão humana (`revisado: true`) e `render`.
+
+Ao publicar, ative o rótulo de conteúdo feito com IA da plataforma. Confirme o direito de imagem de quem aparece nos vídeos de apoio.
