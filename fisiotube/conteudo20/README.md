@@ -93,6 +93,7 @@ Para Reels sem narração sincronizada (ou com vídeos de prática/demonstraçã
 | `icone` | Objeto pequeno em cima + vídeo embaixo, com legenda | `clip`, `kicker`, `icone`, `legendas` |
 | `lista` | Lista da oferta: título e itens com check entrando um a um | `kicker`, `titulo`, `itens`, `ritmo` (s entre itens) |
 | `preco` | Preço: selo, plano, valor "de" riscado, valor "por", parcelado e notas | `kicker`, `selo`, `plano`, `de`, `por`, `por_sub`, `parcelado`, `notas`, `fonte_preco` (onde e quando o preço foi conferido — obrigatório) |
+| `dados` | Card cheio com gráfico: `icones` (matriz de pessoas, com ou sem grupo de comparação), `efeito` (estimativa com IC 95% e linha de nulidade, escala log para RR/OR/HR) ou `antes_depois` (barras com a diferença calculada) | `grafico`, `titulo`, `fonte` (com PMID), `tag`, `achado`, `ressalva`, `nivel`; `icones`: `valor`, `total` (10–100), `unidade_texto`, `rotulo`, `comparacao: {valor, rotulo}`; `efeito`: `estimativa`, `ic`, `medida`, `nulo`, `escala_log`, `escala`, `lados`; `antes_depois`: `antes`, `depois`, `unidade`, `rotulos` |
 | `final` | Palavras grandes (ex.: MANDA PRA / UM COLEGA, ou um site) + rodapé; encolhem para caber | `palavras`, `rodape` |
 
 Comuns: `id`, `dur` (s), `revisado` (obrigatório para renderizar), `encaixe: true` em `hook`, `footage`, `icone` e `prova` para mostrar um vídeo horizontal inteiro sobre fundo desfocado. `clip` = `[arquivo na pasta, início em s]`; vídeos de celular na vertical são respeitados. Raiz: `trilha` = `gerada` (base original, sem direitos de terceiros), caminho de um áudio seu, ou `nenhuma`; `saida`; `references`.
@@ -100,6 +101,7 @@ Comuns: `id`, `dur` (s), `revisado` (obrigatório para renderizar), `encaixe: tr
 ```
 node fisiotube/conteudo20-cli.js referencias roteiro.json   # preenche references a partir dos PMIDs citados
 node fisiotube/conteudo20-cli.js conferir roteiro.json      # folha conferencia.md: card × resumo do estudo
+node fisiotube/conteudo20-cli.js cards <pasta> [roteiro.json]   # só os cards em HTML, para conferir o visual
 node fisiotube/conteudo20-cli.js validate-v2 roteiro.json
 node fisiotube/conteudo20-cli.js render-v2 <pasta> [roteiro.json]
 ```
@@ -137,3 +139,11 @@ O Reels ranqueia primeiro por tempo assistido e conclusão, depois por envios po
 - o vídeo não fecha com `final` ou a CTA não pede envio (`MANDA`, `ENVIE`, `COMPARTILHE`, `MARQUE`).
 
 São avisos, não erros: o render continua liberado.
+
+## Cards em HTML e design system
+
+`prova` e `dados` são desenhados em HTML/CSS (`cards/templates.js`) e fotografados quadro a quadro pelo Playwright em `<pasta>/_cards/<id>/` (PNG transparente). `render-v2` gera os cards antes do vídeo e reaproveita os que não mudaram; o último PNG de cada pasta é o card completo. Requer o Chromium do Playwright (`npx playwright install chromium`). Sem ele, `prova` volta ao desenho antigo em Pillow e `dados` recusa; `--sem-html` força o desenho antigo.
+
+Cores, fontes, raios, espaços e movimento ficam em `fisiotube/design/tokens.json`, lido pelos cards e pelo `render_v2.py`. As cores de nível (A verde, B azul, C âmbar, D vermelho) são reservadas para evidência. Títulos em Montserrat, textos e números em Inter (tabulares); fontes em `render/fonts` ou `CONTEUDO20_FONT_DIR` são carregadas também nos cards.
+
+Os números dos gráficos vêm do estudo e entram na `conferencia.md`; a diferença do `antes_depois` é calculada, nunca digitada. `exemplo/roteiro_v2.json` traz um `efeito` com os dados reais da revisão Cochrane (OR 1,65; IC 95% 1,21 a 2,25); `exemplo/dados_ilustrativo.json` mostra os três gráficos com números fictícios, só para layout.

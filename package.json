@@ -21,7 +21,7 @@
     "credentials:setup": "node utils/credential-manager.js setup",
     "lint": "eslint .",
     "fisiotube:conteudo20": "node fisiotube/conteudo20-cli.js",
-    "test:fisiotube": "node --test fisiotube/*.test.js fisiotube/conteudo20/*.test.js && python3 -m unittest discover -s fisiotube/conteudo20/render -p \"test_*.py\""
+    "test:fisiotube": "node --test fisiotube/*.test.js fisiotube/conteudo20/*.test.js fisiotube/conteudo20/cards/*.test.js && python3 -m unittest discover -s fisiotube/conteudo20/render -p \"test_*.py\""
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.0",

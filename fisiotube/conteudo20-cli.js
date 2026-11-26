@@ -9,7 +9,8 @@
 //   sync <storyboard.json> <words.json> --inicio 5 [--fim 61.3] [--arquivo src.mp4] [--cx 960] [--sem-camera 8.6-19.2,52.8-56.3] [--out cenas.json]
 //   render <pasta>   (exige cenas.json, storyboard.json revisado e o vídeo-fonte na pasta)
 //   validate-v2 <roteiro.json>          formato v2 (6 tipos de tela alternados)
-//   render-v2 <pasta> [roteiro.json]     exige roteiro revisado + os vídeos citados em clip
+//   render-v2 <pasta> [roteiro.json] [--sem-html]   exige roteiro revisado + os vídeos citados em clip
+//   cards <pasta> [roteiro.json]         só gera os cards em HTML (prova, dados) em <pasta>/_cards para conferir o visual
 const fs=require('fs');
 const path=require('path');
 const {spawnSync}=require('child_process');
@@ -19,6 +20,7 @@ const {validateRoteiro,assertRenderableV2}=require('./conteudo20/roteiro_v2');
 const {enrichReferences}=require('./conteudo20/referencias');
 const {nivelReferencia}=require('./evidencia');
 const {conferir}=require('./conteudo20/conferencia');
+const {renderCards,cenasHtml}=require('./conteudo20/cards/render-cards');
 
 const RENDER_DIR=path.join(__dirname,'conteudo20','render');
 const readJson=f=>JSON.parse(fs.readFileSync(f,'utf8'));
@@ -56,6 +58,12 @@ async function main(argv=process.argv.slice(2)){
   const out=opt.out||`${sb.slug}.storyboard.json`;
   writeJson(out,sb);
   console.log(`Storyboard skeleton -> ${out} (${sb.references.length} referências). Preencha cenas e revise.`);
+ }else if(cmd==='cards'){
+  const dir=path.resolve(pos[0]||'.');const file=pos[1]||'roteiro.json';
+  const v=validateRoteiro(readJson(path.join(dir,file)));
+  if(!v.ok) throw new Error('Roteiro inválido:\n- '+v.errors.join('\n- '));
+  const r=await renderCards(dir,file);
+  console.log(`${r.cenas} cena(s), ${r.quadros} quadro(s) novos em ${path.join(dir,'_cards')}. O último PNG de cada pasta é o card completo.`);
  }else if(cmd==='conferir'){
   if(!pos[0]) throw new Error('Usage: conferir <roteiro.json> [--out conferencia.md]');
   const out=typeof opt.out==='string'?opt.out:'conferencia.md';
@@ -100,10 +108,22 @@ async function main(argv=process.argv.slice(2)){
   assertRenderableV2(rt);
   const missing=rt.cenas.filter(c=>c.clip).map(c=>c.clip[0]).filter(f=>!fs.existsSync(path.join(dir,f)));
   if(missing.length) throw new Error('Vídeos não encontrados na pasta: '+[...new Set(missing)].join(', '));
+  if(opt['sem-html']){
+   if(rt.cenas.some(c=>c.tipo==='dados')) throw new Error('cenas do tipo dados precisam dos cards em HTML; tire --sem-html');
+   process.env.CONTEUDO20_SEM_HTML='1';
+  }else if(cenasHtml(rt).length){
+   console.log('Cards em HTML:');
+   try{await renderCards(dir,file);}
+   catch(err){
+    if(rt.cenas.some(c=>c.tipo==='dados')) throw new Error('Cards em HTML falharam ('+err.message.split('\n')[0]+'). Instale o navegador com: npx playwright install chromium');
+    console.warn('Cards em HTML indisponíveis ('+err.message.split('\n')[0]+'); usando o desenho antigo.');
+    process.env.CONTEUDO20_SEM_HTML='1';
+   }
+  }
   python('render_v2.py',[file],dir);
   console.log('Vídeo gerado como RASCUNHO. Revisão humana obrigatória antes de qualquer publicação.');
  }else{
-  console.error('Commands: storyboard | referencias | conferir | validate | transcribe | sync | render | validate-v2 | render-v2');process.exitCode=2;
+  console.error('Commands: storyboard | referencias | conferir | cards | validate | transcribe | sync | render | validate-v2 | render-v2');process.exitCode=2;
  }
 }
 

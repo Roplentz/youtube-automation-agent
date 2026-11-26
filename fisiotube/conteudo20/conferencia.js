@@ -4,19 +4,23 @@
 const {fetchPubMedArticles}=require('../scientific-core');
 const {seloCena}=require('../evidencia');
 
+const COM_FONTE=new Set(['prova','dados']);
+const numerosDados=c=>c.grafico==='icones'?`${c.valor} de ${c.total||100}${c.comparacao?` vs ${c.comparacao.valor} (${c.comparacao.rotulo||'controle'})`:''} ${c.unidade_texto||''}`
+ :c.grafico==='efeito'?`${c.estimativa} (IC 95% ${c.ic?.[0]} a ${c.ic?.[1]}) ${c.medida||''}`
+ :c.grafico==='antes_depois'?`${c.antes} → ${c.depois} ${c.unidade||''}`:'—';
 const pmidsDe=c=>[...String(c.fonte||'').matchAll(/PMID\s*:?\s*(\d+)/gi)].map(m=>m[1]);
 
 function buildConferencia(rt,articles){
  const byId=new Map(articles.map(a=>[String(a.pmid),a]));
- const provas=(rt.cenas||[]).filter(c=>c.tipo==='prova');
+ const provas=(rt.cenas||[]).filter(c=>COM_FONTE.has(c.tipo));
  const out=[`# Conferência de evidência — ${rt.titulo||rt.slug||'roteiro'}`,'',
   'Para cada card: o resumo sustenta o número e o achado, na mesma população e no mesmo desfecho? A força da frase combina com o nível?','',
   'Marque `revisado: true` na cena só depois de conferir.',''];
- if(!provas.length) out.push('_Nenhuma cena do tipo prova._');
+ if(!provas.length) out.push('_Nenhuma cena do tipo prova ou dados._');
  for(const c of provas){
   const selo=seloCena(c,rt.references||[]);
   out.push(`## ${c.id||'?'}${selo?' — '+selo.texto:' — nível não definido'}`,'',
-   `- **Número no card:** ${c.numero||'—'}`,`- **Achado no card:** ${c.achado||'—'}`,`- **Fonte:** ${c.fonte||'—'}`);
+   c.tipo==='dados'?`- **Gráfico (${c.grafico}):** ${c.titulo||''} · ${numerosDados(c).trim()}`:`- **Número no card:** ${c.numero||'—'}`,`- **Achado no card:** ${c.achado||'—'}`,`- **Fonte:** ${c.fonte||'—'}`);
   if(c.ressalva) out.push(`- **Ressalva:** ${c.ressalva}`);
   out.push('');
   for(const id of pmidsDe(c)){
@@ -31,7 +35,7 @@ function buildConferencia(rt,articles){
 }
 
 async function conferir(rt,{fetchImpl}={}){
- const ids=[...new Set((rt.cenas||[]).filter(c=>c.tipo==='prova').flatMap(pmidsDe))];
+ const ids=[...new Set((rt.cenas||[]).filter(c=>COM_FONTE.has(c.tipo)).flatMap(pmidsDe))];
  const articles=[];
  for(let i=0;i<ids.length;i+=20) articles.push(...await fetchPubMedArticles(ids.slice(i,i+20),{fetchImpl}));
  return buildConferencia(rt,articles);

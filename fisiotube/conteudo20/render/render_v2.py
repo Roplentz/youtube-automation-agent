@@ -27,10 +27,28 @@ def M(size, style):
     return ImageFont.truetype(p, size)
 fCap, fCapBig, fKin, fBox = M(56, 'ExtraBold'), M(74, 'ExtraBold'), M(74, 'ExtraBold'), M(56, 'ExtraBold')
 fKick, fBody, fBodyB, fSmall, fHuge, fTag = M(30, 'SemiBold'), M(46, 'Medium'), M(54, 'Bold'), M(28, 'Medium'), M(150, 'ExtraBold'), M(28, 'ExtraBold')
-BG1, BG2 = (22, 21, 25), (32, 30, 34)
-CU, CU2, CUD = (217, 119, 58), (244, 168, 110), (120, 62, 30)
-WH, MUT, YEL = (246, 243, 239), (160, 154, 160), (255, 212, 0)
-NIVEL_COR = {'A': (92, 196, 128), 'B': CU2, 'C': (232, 196, 80), 'D': (222, 104, 96)}
+# Cores vêm do design system (fisiotube/design/tokens.json), o mesmo usado pelos cards em HTML.
+TOKENS = json.load(open(os.path.join(HERE, '..', '..', 'design', 'tokens.json'), encoding='utf-8'))
+def _rgb(h): h = h.lstrip('#'); return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+_C = {k: _rgb(v) for k, v in TOKENS['cor'].items()}
+BG1, BG2 = _C['fundo'], _C['fundo_2']
+CU, CU2, CUD = _C['acento'], _C['acento_claro'], _C['acento_escuro']
+WH, MUT, YEL = _C['texto'], _C['texto_suave'], _C['destaque']
+NIVEL_COR = {k: _rgb(v) for k, v in TOKENS['nivel'].items()}
+
+# Cards em HTML (prova, dados) pré-renderizados pelo CLI em _cards/<id>/NNNN.png. Sem eles, prova cai no
+# desenho em Pillow abaixo e dados recusa. CONTEUDO20_SEM_HTML=1 força o desenho antigo.
+_CARDS = {}
+def card_frame(s, tl):
+    if os.environ.get('CONTEUDO20_SEM_HTML'): return None
+    sid = str(s.get('id'))
+    if sid not in _CARDS:
+        man = os.path.join('_cards', sid, 'manifest.json')
+        _CARDS[sid] = json.load(open(man, encoding='utf-8')) if os.path.exists(man) else None
+    m = _CARDS[sid]
+    if not m: return None
+    i = min(int(round(tl * m['fps'])), m['quadros'] - 1)
+    return Image.open(os.path.join('_cards', sid, f'{i:04d}.png')).convert('RGBA')
 
 def ease(x): x = max(0., min(1., x)); return 1 - (1 - x) ** 3
 def mix(a, b, k): return tuple(int(x + (y - x) * k) for x, y in zip(a, b))
@@ -243,6 +261,15 @@ def screen(s, tl, fr):
         c = captions_at(s, tl)
         if c: img = reveal_text(img, c[1], c[2], tl - c[0], 1600, fCap, maxw=820)
         return img.convert('RGB')
+    if kind == 'dados':
+        cf = card_frame(s, tl)
+        if cf is None: sys.exit(f"Cena {s.get('id')}: tipo dados precisa dos cards em HTML; rode pelo CLI (render-v2) ou o comando cards.")
+        img = dark_bg().convert('RGBA'); img.alpha_composite(cf); return img.convert('RGB')
+    if kind == 'prova' and card_frame(s, tl) is not None:
+        top = dark_bg().crop((0, 0, W, 900)).convert('RGBA'); top.alpha_composite(card_frame(s, tl))
+        img = Image.new('RGBA', (W, H)); img.paste(top, (0, 0))
+        bot = fit(fr, W, H - 900) if s.get('encaixe') else cover(fr, W, H - 900, 0.4)
+        img.paste(bot, (0, 900)); return img.convert('RGB')
     if kind == 'prova':
         top = dark_bg().crop((0, 0, W, 900)).convert('RGBA'); d = ImageDraw.Draw(top); k = ease(tl / 0.35)
         ov = Image.new('RGBA', top.size, (0, 0, 0, 0)); od = ImageDraw.Draw(ov)

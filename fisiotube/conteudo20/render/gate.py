@@ -45,10 +45,10 @@ def check_roteiro(doc):
     errors = _base(doc)
     refs = _refs(doc)
     for c in doc.get('cenas') or []:
-        if c.get('tipo') == 'prova':
+        if c.get('tipo') in ('prova', 'dados'):
             ids = PMID.findall(str(c.get('fonte', '')))
             if not ids or not all(i in refs for i in ids):
-                errors.append(f"{c.get('id', '?')}: prova without a PMID listed in references")
+                errors.append(f"{c.get('id', '?')}: {c.get('tipo')} without a PMID listed in references")
     return errors
 
 
