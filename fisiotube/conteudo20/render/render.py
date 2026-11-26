@@ -306,26 +306,38 @@ def broll_frame(key, spec, off):
     if len(b) == n: r['last'] = Image.frombuffer('RGB', (1920, 1080), b)
     return r['last']
 
-def fit_broll(fr, w, h, rotulo=None):
-    """Quadro 16:9 inteiro (exercício sem corte) sobre fundo desfocado do próprio vídeo."""
+def fit_broll(fr, w, h, rotulo=None, tl=None, dur=None):
+    """Quadro 16:9 inteiro (exercício sem corte) sobre fundo desfocado do próprio vídeo.
+    Com tl/dur (tempo dentro do trecho), anima: zoom lento (Ken Burns) e rótulo que desliza da esquerda."""
     k = max(w / 1920, h / 1080); cw, ch = w / k, h / k
     bg = fr.crop(((1920 - cw) / 2, (1080 - ch) / 2, (1920 + cw) / 2, (1080 + ch) / 2)).resize((w, h)).filter(ImageFilter.GaussianBlur(30))
     bg = Image.blend(bg, Image.new('RGB', (w, h), (8, 8, 10)), 0.45)
     fh = round(w * 1080 / 1920); y = 700 if h == H else 40
-    bg.paste(fr.resize((w, fh), Image.LANCZOS), (0, y))
+    vid = fr
+    if tl is not None and dur:
+        z = 1 + 0.07 * min(1, max(0, tl / dur))          # zoom lento, 0 a 7% ao longo do trecho
+        zw, zh = 1920 / z, 1080 / z
+        vid = fr.crop(((1920 - zw) / 2, (1080 - zh) / 2, (1920 + zw) / 2, (1080 + zh) / 2))
+    bg.paste(vid.resize((w, fh), Image.LANCZOS), (0, y))
     if rotulo:
         d = ImageDraw.Draw(bg); tw = d.textlength(rotulo, font=fS)
-        rr(d, (24, y + fh - 64, 24 + tw + 40, y + fh - 20), 22, fill=(14, 13, 16))
-        d.text((44, y + fh - 42), rotulo, font=fS, fill=OR2, anchor='lm')
+        a = 1 if tl is None else ease((tl - 0.15) / 0.35)
+        dx = -(1 - a) * (tw + 80)
+        if a > 0:
+            rr(d, (24 + dx, y + fh - 64, 24 + dx + tw + 40, y + fh - 20), 22, fill=(14, 13, 16))
+            d.text((44 + dx, y + fh - 42), rotulo, font=fS, fill=OR2, anchor='lm')
     return bg
 
 def cam_img(fr, t, w, h):
     sub = sub_at(t)
     if not sub: return crop_cam(fr, w, h)
     if isinstance(sub[2], dict):
-        spec = sub[2]
-        b = broll_frame(SUBS.index(sub), spec, spec.get('inicio', 0) + t - sub[0])
-        return fit_broll(b or fr, w, h, spec.get('rotulo'))
+        spec = sub[2]; tl = t - sub[0]
+        b = broll_frame(SUBS.index(sub), spec, spec.get('inicio', 0) + tl)
+        img = fit_broll(b or fr, w, h, spec.get('rotulo'), tl, sub[1] - sub[0])
+        fade = spec.get('transicao', 0.3)                 # entra e sai com fusão rápida sobre o apresentador
+        k = min(1, tl / fade, (sub[1] - t) / fade) if fade > 0 else 1
+        return img if k >= 1 else Image.blend(crop_cam(fr, w, h), img, max(0, k))
     img = crop_cam(still_at(sub[2]), w, h)
     k = 1 + 0.08 * (t - sub[0]) / max(0.1, sub[1] - sub[0])
     cw, ch = w / k, h / k; x0, y0 = (w - cw) / 2, (h - ch) / 2
