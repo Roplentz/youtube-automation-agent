@@ -14,7 +14,7 @@ tema ──(PubMed opcional)──▶ storyboard.json ──revisão humana─�
 
 | Etapa | Comando | O que faz |
 |---|---|---|
-| 1 | `node fisiotube/conteudo20-cli.js storyboard "<tema>" --query "<busca PubMed>"` | Cria o esqueleto do storyboard com as referências do `scientific-core` (PMID/DOI). |
+| 1 | `node fisiotube/conteudo20-cli.js storyboard "<tema>" --query "<busca PubMed>" [--desde 2015] [--ate 2026] [--tipos ecr,revisao_sistematica]` | Cria o esqueleto do storyboard com as referências do `scientific-core` (PMID, DOI, ano, revista e desenho do estudo). Tipos aceitos: `metanalise`, `revisao_sistematica`, `ecr`, `ensaio_clinico`, `diretriz`, `revisao`. |
 | 2 | (humano ou skill de roteiro) | Preenche `cenas[]`: fala, gatilhos, layout, modelo, `claims` com PMIDs. Marca `revisado: true` cena a cena. |
 | 3 | `node fisiotube/conteudo20-cli.js validate storyboard.json` | Valida contrato, travas de segurança e fontes das afirmações. |
 | 4 | `node fisiotube/conteudo20-cli.js transcribe gravacao.mp4 words.json` | Transcrição palavra a palavra com faster-whisper (local). |
@@ -98,8 +98,23 @@ Para Reels sem narração sincronizada (ou com vídeos de prática/demonstraçã
 Comuns: `id`, `dur` (s), `revisado` (obrigatório para renderizar), `encaixe: true` em `hook`, `footage`, `icone` e `prova` para mostrar um vídeo horizontal inteiro sobre fundo desfocado. `clip` = `[arquivo na pasta, início em s]`; vídeos de celular na vertical são respeitados. Raiz: `trilha` = `gerada` (base original, sem direitos de terceiros), caminho de um áudio seu, ou `nenhuma`; `saida`; `references`.
 
 ```
+node fisiotube/conteudo20-cli.js referencias roteiro.json   # preenche references a partir dos PMIDs citados
 node fisiotube/conteudo20-cli.js validate-v2 roteiro.json
 node fisiotube/conteudo20-cli.js render-v2 <pasta> [roteiro.json]
 ```
 
+`referencias` busca no PubMed os PMIDs das `references` e das `fonte` das cenas `prova`, grava título, DOI, ano, revista e desenho, mantém campos escritos à mão (ex.: notas do revisor), avisa sobre desenhos fracos (relato de caso, revisão narrativa) e sai com código 3 se algum PMID não existir. O desenho vem da classificação do PubMed: é uma pista para o revisor, não uma avaliação de qualidade.
+
 `render-v2` recusa se faltar revisão humana, se uma `prova` não tiver PMID listado em `references` ou se um vídeo citado não estiver na pasta. Estilo: Montserrat ExtraBold (cai para Poppins se não houver), grafite #16151A–#201E22, cobre #D9773A. Exemplo: `exemplo/roteiro_v2.json`.
+
+## Travas no render em Python
+
+`render.py` e `render_v2.py` repetem a trava do CLI (`render/gate.py`): um render completo chamado direto pelo Python também recusa cenas sem `revisado: true`, `prova` ou afirmação sem PMID em `references` e `publishingEnabled` diferente de `false`. Prévias de quadros continuam liberadas para ajudar na revisão.
+
+## PubMed (NCBI)
+
+As buscas respeitam o limite da NCBI (3 requisições/s; 10/s com chave). Opcional no `.env`: `NCBI_API_KEY` e `NCBI_EMAIL`.
+
+## Testes
+
+`npm run test:fisiotube` roda os testes em Node e em Python; o CI roda esse job em todo push para `feature/**`, `fix/**` e `master` e em todo pull request.
