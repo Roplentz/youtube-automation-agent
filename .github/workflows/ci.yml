@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - master
+      - 'feature/**'
+      - 'fix/**'
   pull_request:
-    branches:
-      - master
 
 jobs:
   test:
@@ -30,3 +30,24 @@ jobs:
 
       - name: Test
         run: npm test
+
+  fisiotube:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      # FisioTube tests use only Node and Python standard libraries; no npm install needed.
+      - name: FisioTube tests
+        run: npm run test:fisiotube

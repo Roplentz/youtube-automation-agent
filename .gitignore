@@ -91,3 +91,11 @@ data/thumbnails/
 
 # Claude worktrees
 .claude/worktrees/
+
+# FisioTube Conteúdo 2.0 — saídas locais de renderização
+fisiotube/conteudo20/**/*.mp4
+fisiotube/conteudo20/**/prev_*.jpg
+fisiotube/conteudo20/**/cenas.json
+
+__pycache__/
+_cards/

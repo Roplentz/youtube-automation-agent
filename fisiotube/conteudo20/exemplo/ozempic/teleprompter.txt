@@ -1,0 +1,64 @@
+OZEMPIC, MÚSCULO E ELETROESTIMULAÇÃO — teleprompter
+Reel · ~50 s · 119 palavras (ritmo 2,4 palavras/s)
+Palavras em MAIÚSCULAS = algo muda na tela. Fale com clareza, sem engolir os números.
+
+[GANCHO]
+Ozempic emagrece.
+Mas nem todo quilo que sai é gordura.
+
+[C1]
+Numa METANÁLISE de 2026,
+cerca de 35% do peso perdido com semaglutida
+era massa magra.
+
+[C2]
+Com mudança de ESTILO DE VIDA é parecido.
+Mas somando TREINO DE FORÇA,
+caiu para perto de 17.
+
+[C3]
+E a ELETROESTIMULAÇÃO de corpo inteiro?
+Em 26 estudos, ela aumentou massa muscular e FORÇA.
+Um efeito PEQUENO, mas real.
+
+[C4]  [PAUSA — painel em tela cheia]
+Só que, num ENSAIO com pessoas em dieta,
+só o treino de força PRESERVOU o músculo.
+A eletroestimulação melhorou a força,
+mas NÃO SEGUROU a massa.
+
+[C5]
+E eu NÃO ENCONTREI nenhum estudo
+testando isso em quem usa Ozempic.
+Então: treino de força PRIMEIRO.
+A eletroestimulação entra como COMPLEMENTO,
+com fisioterapeuta.
+
+[CTA]
+Manda para alguém que usa Ozempic.
+
+
+GANCHOS ALTERNATIVOS (gravar em takes separados)
+1. Ozempic emagrece. Mas nem todo quilo que sai é gordura.
+2. Um terço do peso que sai com Ozempic não é gordura.
+3. Eletroestimulação protege o músculo de quem usa Ozempic? Depende.
+
+
+COMO FALAR OS NÚMEROS
+- "35%" → fale "trinta e cinco por cento".
+- "17" → "dezessete". "26 estudos" → "vinte e seis estudos".
+- Diga "semaglutida" com calma: é a palavra que a transcrição mais erra.
+
+
+ORIENTAÇÕES DE GRAVAÇÃO
+- Horizontal 1920x1080 (a máquina recorta), você centralizado, fundo liso e sem logos, luz frontal, microfone de lapela.
+- 2 s de silêncio antes de começar e depois de terminar. Pode gravar um take por bloco; a máquina emenda.
+- Grave os 3 ganchos em takes separados.
+
+
+FONTES (conferir antes de marcar revisado: true no storyboard)
+- PMID 41877354 — metanálise 2026, 20 ECRs, 15.782 pessoas: massa magra = 35,2% do peso perdido com semaglutida (IC 95% 31,5–38,9); estilo de vida 26,2%; estilo de vida + treino de força 17,5%.
+- PMID 36827042 — metanálise 2023, 26 estudos, 1.183 pessoas: EECI × massa muscular, DMP 0,36 (IC 95% 0,16–0,57), heterogeneidade baixa (I² 15%).
+- PMID 34068089 — ECR 2021, 118 pessoas com síndrome metabólica em restrição calórica por 12 semanas: só treino de força (1 ou 3 séries) preservou massa muscular esquelética; EECI aumentou força, sem preservar massa.
+- PMID 29875684 — revisão sistemática 2018: EECI bem aplicada e supervisionada é segura e é opção para quem não consegue ou não quer treinar convencionalmente.
+- "Não encontrei estudo com quem usa Ozempic": busca no PubMed em 25/11/2026 (EECI ou eletroestimulação muscular + semaglutida, tirzepatida, liraglutida ou GLP-1) sem nenhum estudo clínico. Refaça a busca antes de publicar.

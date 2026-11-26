@@ -1,0 +1,206 @@
+{
+ "titulo": "Frequência muda o tipo de contração",
+ "slug": "frequencia-tetania",
+ "formato": "reel",
+ "duracao_alvo": 55,
+ "marca": "FisioTube",
+ "status": "DRAFT_REVIEW_REQUIRED",
+ "scientificReviewRequired": true,
+ "publishingEnabled": false,
+ "gancho": {
+  "titulo": [
+   "A FREQUÊNCIA",
+   "muda o tipo",
+   "de contração"
+  ],
+  "kicker": "FISIOTUBE",
+  "alternativas": []
+ },
+ "cenas": [
+  {
+   "id": "C1",
+   "bloco": "explicacao",
+   "layout": "split",
+   "modelo": "osciloscopio",
+   "revisado": true,
+   "fala": "Com frequência baixa, perto de 10 ou 15 Hz, cada pulso gera um abalo isolado: o músculo contrai e relaxa.",
+   "gatilhos": [
+    {
+     "palavra": "10",
+     "acao": {
+      "keyframe_hz": 10,
+      "rotulo": [
+       "Abalos isolados",
+       "contrai · relaxa"
+      ]
+     }
+    },
+    {
+     "palavra": "15",
+     "acao": {
+      "keyframe_hz": 15
+     }
+    }
+   ]
+  },
+  {
+   "id": "C2",
+   "bloco": "explicacao",
+   "layout": "full",
+   "modelo": "osciloscopio",
+   "revisado": true,
+   "fala": "Esse padrão relaxa a fibra entre os pulsos e serve para trabalho metabólico e relaxamento muscular.",
+   "gatilhos": [
+    {
+     "palavra": "relaxa a fibra",
+     "acao": {}
+    },
+    {
+     "palavra": "metabólico",
+     "acao": {
+      "chip": "trabalho metabólico"
+     }
+    },
+    {
+     "palavra": "relaxamento muscular",
+     "acao": {
+      "chip": "relaxamento muscular"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C3",
+   "bloco": "explicacao",
+   "layout": "split",
+   "modelo": "osciloscopio",
+   "revisado": true,
+   "fala": "Quando a gente sobe acima de 20 Hz e depois 30 Hz, o relaxamento quase some e as contrações se somam até a tetânica. Com 50 Hz e 80 Hz chegamos à intensidade máxima.",
+   "gatilhos": [
+    {
+     "palavra": "Quando a gente",
+     "acao": {}
+    },
+    {
+     "palavra": "20",
+     "acao": {
+      "keyframe_hz": 20,
+      "chips_fim": true,
+      "rotulo": [
+       "Somação",
+       "o relaxamento quase some"
+      ]
+     }
+    },
+    {
+     "palavra": "30",
+     "acao": {
+      "keyframe_hz": 30
+     }
+    },
+    {
+     "palavra": "tetânica",
+     "acao": {
+      "rotulo": [
+       "Tetania",
+       "o músculo fica contraído"
+      ]
+     }
+    },
+    {
+     "palavra": "50",
+     "acao": {
+      "keyframe_hz": 50
+     }
+    },
+    {
+     "palavra": "80",
+     "acao": {
+      "keyframe_hz": 80
+     }
+    },
+    {
+     "palavra": "intensidade máxima",
+     "acao": {
+      "rotulo": [
+       "Tetania máxima",
+       "intensidade máxima"
+      ]
+     }
+    }
+   ]
+  },
+  {
+   "id": "C4",
+   "bloco": "aplicacao",
+   "layout": "split",
+   "modelo": "forca_fadiga",
+   "revisado": true,
+   "fala": "Um fato importante: quando você aumenta a frequência, aumenta a força gerada pelo músculo,",
+   "gatilhos": [
+    {
+     "palavra": "Um fato",
+     "acao": {}
+    },
+    {
+     "palavra": "aumenta a frequência",
+     "acao": {
+      "evento": "freq_sobe"
+     }
+    },
+    {
+     "palavra": "força",
+     "acao": {
+      "evento": "forca"
+     }
+    }
+   ]
+  },
+  {
+   "id": "C5",
+   "bloco": "aplicacao",
+   "layout": "full",
+   "modelo": "forca_fadiga",
+   "revisado": true,
+   "fala": "mas também acelera a fadiga.",
+   "gatilhos": [
+    {
+     "palavra": "mas também",
+     "acao": {
+      "evento": "fadiga"
+     }
+    }
+   ]
+  }
+ ],
+ "cta": {
+  "linha1": "Salve para ajustar",
+  "destaque": "a frequência",
+  "linha2": "na próxima sessão",
+  "rodape": "FisioTube · rascunho para revisão"
+ },
+ "destaques": [
+  "10",
+  "15",
+  "20",
+  "30",
+  "50",
+  "80",
+  "hz",
+  "baixa",
+  "tetânica",
+  "tetania",
+  "força",
+  "fadiga",
+  "máxima",
+  "contraído",
+  "frequência"
+ ],
+ "correcoes_previstas": {
+  "contraa": "contrai",
+  "contrae": "contrai"
+ },
+ "modelos_novos": [],
+ "references": [],
+ "legenda_post": "Exemplo sintético para testes."
+}

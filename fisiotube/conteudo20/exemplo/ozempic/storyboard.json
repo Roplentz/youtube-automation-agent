@@ -1,0 +1,395 @@
+{
+ "titulo": "Ozempic, músculo e eletroestimulação: o que a ciência mostra",
+ "slug": "ozempic-musculo-eeci",
+ "formato": "reel",
+ "duracao_alvo": 50,
+ "marca": "Eletropilates",
+ "status": "DRAFT_REVIEW_REQUIRED",
+ "scientificReviewRequired": true,
+ "publishingEnabled": false,
+ "gancho": {
+  "titulo": [
+   "OZEMPIC",
+   "emagrece,",
+   "mas nem tudo",
+   "é gordura"
+  ],
+  "kicker": "ELETROPILATES",
+  "fala": "Ozempic emagrece. Mas nem todo quilo que sai é gordura.",
+  "alternativas": [
+   "Um terço do peso que sai com Ozempic não é gordura.",
+   "Eletroestimulação protege o músculo de quem usa Ozempic? Depende."
+  ]
+ },
+ "cenas": [
+  {
+   "id": "C1",
+   "bloco": "contexto",
+   "layout": "split",
+   "modelo": "numero",
+   "fala": "Numa metanálise de 2026, cerca de 35% do peso perdido com semaglutida era massa magra.",
+   "gatilhos": [
+    {
+     "palavra": "metanálise",
+     "acao": {}
+    },
+    {
+     "palavra": "35",
+     "acao": {
+      "evento": "conta"
+     }
+    }
+   ],
+   "params": {
+    "kicker": "SEMAGLUTIDA · 20 ENSAIOS",
+    "valor": 35,
+    "unidade": "%",
+    "rotulo": "do peso perdido era massa magra"
+   },
+   "texto_tela": [
+    "35%",
+    "do peso perdido era massa magra"
+   ],
+   "claims": [
+    {
+     "text": "~35% do peso perdido com semaglutida era massa magra (35,2%; IC 95% 31,5–38,9)",
+     "pmids": [
+      "41877354"
+     ]
+    }
+   ],
+   "revisado": true
+  },
+  {
+   "id": "C2",
+   "bloco": "explicacao",
+   "layout": "split",
+   "modelo": "cartao",
+   "novo_bloco": true,
+   "fala": "Com mudança de estilo de vida é parecido. Mas somando treino de força, caiu para perto de 17.",
+   "gatilhos": [
+    {
+     "palavra": "estilo de vida",
+     "acao": {
+      "item": "Estilo de vida: ~26%"
+     }
+    },
+    {
+     "palavra": "treino de força",
+     "acao": {}
+    },
+    {
+     "palavra": "17",
+     "acao": {
+      "item": "+ treino de força: ~17,5%"
+     }
+    }
+   ],
+   "params": {
+    "kicker": "MESMA METANÁLISE",
+    "titulo": "Massa magra no peso perdido"
+   },
+   "texto_tela": [
+    "Estilo de vida: ~26%",
+    "+ treino de força: ~17,5%"
+   ],
+   "claims": [
+    {
+     "text": "Estilo de vida: 26,2%; estilo de vida + treino de força: 17,5%",
+     "pmids": [
+      "41877354"
+     ]
+    }
+   ],
+   "revisado": true
+  },
+  {
+   "id": "C3",
+   "bloco": "explicacao",
+   "layout": "split",
+   "modelo": "cartao",
+   "novo_bloco": true,
+   "fala": "E a eletroestimulação de corpo inteiro? Em 26 estudos, ela aumentou massa muscular e força. Um efeito pequeno, mas real.",
+   "gatilhos": [
+    {
+     "palavra": "eletroestimulação",
+     "acao": {}
+    },
+    {
+     "palavra": "26",
+     "acao": {
+      "item": "26 estudos · 1.183 pessoas"
+     }
+    },
+    {
+     "palavra": "força",
+     "acao": {
+      "item": "+ massa muscular e força"
+     }
+    },
+    {
+     "palavra": "pequeno",
+     "acao": {
+      "item": "Efeito pequeno (DMP 0,36)"
+     }
+    }
+   ],
+   "params": {
+    "kicker": "EECI · METANÁLISE 2023",
+    "titulo": "Eletroestimulação de corpo inteiro"
+   },
+   "texto_tela": [
+    "26 estudos · 1.183 pessoas",
+    "+ massa muscular e força",
+    "Efeito pequeno (DMP 0,36)"
+   ],
+   "claims": [
+    {
+     "text": "EECI aumentou massa muscular (DMP 0,36; IC 95% 0,16–0,57) e força em 26 estudos",
+     "pmids": [
+      "36827042"
+     ]
+    }
+   ],
+   "revisado": true
+  },
+  {
+   "id": "C4",
+   "bloco": "virada",
+   "layout": "split",
+   "modelo": "cartao",
+   "novo_bloco": true,
+   "fala": "Só que, num ensaio com pessoas em dieta, só o treino de força preservou o músculo. A eletroestimulação melhorou a força, mas não segurou a massa.",
+   "gatilhos": [
+    {
+     "palavra": "ensaio",
+     "acao": {
+      "item": "118 pessoas em dieta · 12 semanas"
+     }
+    },
+    {
+     "palavra": "preservou",
+     "acao": {
+      "item": "Treino de força: músculo preservado"
+     }
+    },
+    {
+     "palavra": "não segurou",
+     "acao": {
+      "item": "EECI: mais força, massa não preservada"
+     }
+    }
+   ],
+   "params": {
+    "kicker": "ENSAIO CLÍNICO 2021",
+    "titulo": "Durante o emagrecimento"
+   },
+   "texto_tela": [
+    "118 pessoas em dieta · 12 semanas",
+    "Treino de força: músculo preservado",
+    "EECI: mais força, massa não preservada"
+   ],
+   "claims": [
+    {
+     "text": "Em restrição calórica, só o treino de força preservou a massa muscular esquelética; a EECI aumentou a força",
+     "pmids": [
+      "34068089"
+     ]
+    }
+   ],
+   "revisado": true
+  },
+  {
+   "id": "C5",
+   "bloco": "aplicacao",
+   "layout": "split",
+   "modelo": "cartao",
+   "novo_bloco": true,
+   "fala": "E eu não encontrei nenhum estudo testando isso em quem usa Ozempic. Então: treino de força primeiro. A eletroestimulação entra como complemento, com fisioterapeuta.",
+   "gatilhos": [
+    {
+     "palavra": "não encontrei",
+     "acao": {
+      "item": "Sem estudos com semaglutida"
+     }
+    },
+    {
+     "palavra": "primeiro",
+     "acao": {
+      "item": "1º treino de força + proteína"
+     }
+    },
+    {
+     "palavra": "complemento",
+     "acao": {
+      "item": "EECI: complemento supervisionado"
+     }
+    }
+   ],
+   "params": {
+    "kicker": "NA PRÁTICA",
+    "titulo": "Quem usa Ozempic"
+   },
+   "texto_tela": [
+    "Sem estudos com semaglutida",
+    "1º treino de força + proteína",
+    "EECI: complemento supervisionado"
+   ],
+   "claims": [
+    {
+     "text": "Treino de força e proteína adequada preservam massa muscular no emagrecimento",
+     "pmids": [
+      "41877354"
+     ]
+    },
+    {
+     "text": "EECI bem aplicada e supervisionada é opção para quem não consegue ou não quer treinar convencionalmente",
+     "pmids": [
+      "29875684"
+     ]
+    }
+   ],
+   "revisado": true
+  }
+ ],
+ "cta": {
+  "linha1": "Manda pra quem",
+  "destaque": "usa Ozempic",
+  "linha2": "",
+  "rodape": "Método Eletropilates · Prof. Dr. Rodrigo Plentz",
+  "botao": "Enviar vídeo",
+  "fala": "Manda para alguém que usa Ozempic."
+ },
+ "destaques": [
+  "ozempic",
+  "semaglutida",
+  "35",
+  "17",
+  "26",
+  "massa",
+  "magra",
+  "força",
+  "eletroestimulação",
+  "músculo",
+  "dieta"
+ ],
+ "correcoes_previstas": {
+  "ozempik": "Ozempic",
+  "semaglutide": "semaglutida",
+  "eletro estimulação": "eletroestimulação"
+ },
+ "modelos_novos": [],
+ "references": [
+  {
+   "pmid": "41877354",
+   "doi": "10.1111/dom.70666",
+   "title": "Lean Mass Changes With Incretin Therapy Versus Lifestyle Intervention: A Systematic Review and Meta-Analysis of Randomised Controlled Trials.",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/41877354/",
+   "year": 2026,
+   "journal": "Diabetes Obes Metab",
+   "design": "metanalise",
+   "nivel_desenho": "A"
+  },
+  {
+   "pmid": "36827042",
+   "doi": "10.1097/MD.0000000000032668",
+   "title": "The effects of whole-body muscle stimulation on body composition and strength parameters: A PRISMA systematic review and meta-analysis.",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/36827042/",
+   "year": 2023,
+   "journal": "Medicine (Baltimore)",
+   "design": "metanalise",
+   "nivel_desenho": "A"
+  },
+  {
+   "pmid": "34068089",
+   "doi": "10.3390/nu13051640",
+   "title": "Iron Beats Electricity: Resistance Training but Not Whole-Body Electromyostimulation Improves Cardiometabolic Health in Obese Metabolic Syndrome Patients during Caloric Restriction-A Randomized-Controlled Study.",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/34068089/",
+   "year": 2021,
+   "journal": "Nutrients",
+   "design": "ecr",
+   "nivel_desenho": "B"
+  },
+  {
+   "pmid": "29875684",
+   "doi": "10.3389/fphys.2018.00573",
+   "title": "Efficacy and Safety of Low Frequency Whole-Body Electromyostimulation (WB-EMS) to Improve Health-Related Outcomes in Non-athletic Adults. A Systematic Review.",
+   "url": "https://pubmed.ncbi.nlm.nih.gov/29875684/",
+   "year": 2018,
+   "journal": "Front Physiol",
+   "design": "outro",
+   "nivel_desenho": "D",
+   "nivel": "B",
+   "nivel_motivo": "Revisão sistemática sem metanálise (inclui ensaios não randomizados); o PubMed não a marcou como revisão, por isso o nível automático saiu D."
+  }
+ ],
+ "legenda_post": "Ozempic emagrece, mas cerca de 35% do peso perdido com semaglutida é massa magra.\n\nO que mais protege o músculo durante o emagrecimento é treino de força com proteína adequada. A eletroestimulação de corpo inteiro aumenta massa muscular e força em geral, mas num ensaio com pessoas em dieta só o treino de força preservou o músculo. E ainda não há estudos com quem usa semaglutida.\n\nManda pra alguém que usa Ozempic 💬\n\nFontes: PMID 41877354 · 36827042 · 34068089 · 29875684\n\n#ozempic #semaglutida #massamuscular #eletroestimulacao #wbems #eletropilates #fisioterapia",
+ "revisado_por": "Rodrigo Plentz (aprovado no chat em 25/11/2026)",
+ "camera_substituta": [
+  [
+   16.2,
+   20.3,
+   {
+    "video": "broll/academia_agachamento.mp4",
+    "inicio": 0,
+    "rotulo": "Treino de força · ilustração (IA)"
+   }
+  ],
+  [
+   20.4,
+   28.8,
+   {
+    "video": "broll/eletropilates_ex49.mp4",
+    "inicio": 18.8,
+    "rotulo": "Método Eletropilates · Exercício 49"
+   }
+  ],
+  [
+   32.4,
+   35.3,
+   {
+    "video": "broll/academia_remada.mp4",
+    "inicio": 1,
+    "rotulo": "Treino de força · ilustração (IA)"
+   }
+  ],
+  [
+   35.4,
+   39.9,
+   {
+    "video": "broll/eletropilates_ex49.mp4",
+    "inicio": 39.6,
+    "rotulo": "Método Eletropilates · Exercício 49"
+   }
+  ],
+  [
+   43.9,
+   46.6,
+   {
+    "video": "broll/academia_agachamento.mp4",
+    "inicio": 4,
+    "rotulo": "Treino de força · ilustração (IA)"
+   }
+  ],
+  [
+   46.7,
+   50.9,
+   {
+    "video": "broll/eletropilates_ex49.mp4",
+    "inicio": 26.6,
+    "rotulo": "Método Eletropilates · Exercício 49"
+   }
+  ]
+ ],
+ "correcoes_transcricao": {
+  "o zempique": "Ozempic",
+  "aquilo@2.82": "quilo",
+  "mais@28.4": "mas"
+ },
+ "producao": {
+  "voz": "ElevenLabs, voz clonada do autor (eleven_v4), texto do teleprompter",
+  "avatar": "ElevenLabs HeyGen Avatar 6 Turbo a partir de foto 16:9 da cabeça aos ombros (cx 950)",
+  "video_de_apoio": "academia: Veo 3.1 Lite (ilustração, IA); EECI: Exercício 49 do curso Eletropilates (gravação própria)",
+  "midia_fora_do_repositorio": "src.mp4 e broll/*.mp4 ficam na pasta do vídeo; não são versionados"
+ }
+}

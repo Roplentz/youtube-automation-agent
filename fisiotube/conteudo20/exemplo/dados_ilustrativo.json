@@ -1,0 +1,91 @@
+{
+ "titulo": "Ilustrativo: os três gráficos da tela dados (números fictícios)",
+ "slug": "dados-ilustrativo",
+ "status": "DRAFT_REVIEW_REQUIRED",
+ "scientificReviewRequired": true,
+ "publishingEnabled": false,
+ "trilha": "nenhuma",
+ "references": [
+  {
+   "pmid": "00000000",
+   "title": "Referência fictícia, só para demonstrar o layout",
+   "year": 2024,
+   "design": "ecr",
+   "nivel_desenho": "B"
+  }
+ ],
+ "cenas": [
+  {
+   "id": "D0",
+   "tipo": "hook",
+   "dur": 2.5,
+   "clip": [
+    "seu_video.mp4",
+    0
+   ],
+   "caixa": [
+    "EXEMPLO",
+    "FICTÍCIO"
+   ],
+   "chave": [
+    "FICTÍCIO"
+   ],
+   "revisado": true
+  },
+  {
+   "id": "D1",
+   "tipo": "dados",
+   "dur": 5,
+   "grafico": "icones",
+   "tag": "EXEMPLO",
+   "titulo": "Voltaram a andar sem ajuda em 6 meses",
+   "valor": 31,
+   "comparacao": {
+    "valor": 19,
+    "rotulo": "Só fisioterapia"
+   },
+   "rotulo": "Robô + fisioterapia",
+   "unidade_texto": "pessoas em cada 100",
+   "fonte": "Exemplo fictício · PMID 00000000",
+   "revisado": true
+  },
+  {
+   "id": "D2",
+   "tipo": "dados",
+   "dur": 5,
+   "grafico": "icones",
+   "tag": "EXEMPLO",
+   "titulo": "Quantos sentem alívio da dor com TENS",
+   "valor": 42,
+   "unidade_texto": "em cada 100 pessoas tratadas",
+   "fonte": "Exemplo fictício · PMID 00000000",
+   "revisado": true
+  },
+  {
+   "id": "D3",
+   "tipo": "dados",
+   "dur": 5,
+   "grafico": "antes_depois",
+   "tag": "EXEMPLO",
+   "titulo": "Teste de caminhada de 6 minutos",
+   "antes": 312,
+   "depois": 378,
+   "unidade": "m",
+   "achado": "Média do grupo após 8 semanas de treino.",
+   "fonte": "Exemplo fictício · PMID 00000000",
+   "ressalva": "Sem grupo controle: não separa o efeito do treino da melhora natural.",
+   "revisado": true
+  },
+  {
+   "id": "D4",
+   "tipo": "final",
+   "dur": 3,
+   "palavras": [
+    "MANDA PRA",
+    "UM COLEGA"
+   ],
+   "rodape": "Prof. Dr. Rodrigo Plentz",
+   "revisado": true
+  }
+ ]
+}

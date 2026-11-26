@@ -1,0 +1,14 @@
+{
+  "produto": "EletroPilates",
+  "aberturas": [
+    {"fala":"Você escolheu o exercício. O que faria você decidir se vale a pena acrescentar eletroestimulação nessa sessão?","visual":"Rodrigo faz a pergunta olhando para a câmera."},
+    {"fala":"Imagine esta cena no estúdio. O aparelho está ao lado do reformer. O que você quer observar antes de ligá-lo?","visual":"Abrir com trecho real do estúdio e do equipamento."}
+  ],
+  "corpo": [
+    {"fala":"Se você trabalha com Pilates, conhece esse momento. O exercício já está planejado, o equipamento está disponível e surge a pergunta sobre o que a combinação acrescenta para aquela pessoa.","visual":"Plano do ambiente de Pilates."},
+    {"fala":"Eu sou Rodrigo Plentz, fisioterapeuta e professor. Essa é a conversa que eu quero abrir com você ao apresentar o EletroPilates.","visual":"Apresentação do professor."},
+    {"fala":"Pense em um exercício que você utiliza toda semana. Qual é o objetivo dele? O que você observa durante a execução? Em que momento uma mudança na sua escolha faria sentido?","visual":"Inserir trecho de aula autorizado que corresponda à fala."},
+    {"fala":"Essas perguntas ajudam a olhar para a relação entre a tecnologia e a decisão do fisioterapeuta. Se esse é um tema que aparece no seu estúdio, vale olhar a proposta do curso e ver como ela conversa com a sua prática.","visual":"Mostrar a apresentação real do programa."},
+    {"fala":"Conheça o programa do EletroPilates.","visual":"Cartela final com o nome do curso."}
+  ]
+}
