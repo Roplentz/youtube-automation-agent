@@ -5,6 +5,7 @@ Telas: hook (vídeo + caixa-manchete) · footage (vídeo + legenda progressiva) 
 Uso: python3 render_v2.py roteiro.json [t1 t2 ...]   (com tempos = só prévias JPG; sem = render completo)
 Roda localmente, sem API paga. O vídeo gerado é RASCUNHO para revisão humana."""
 import json, math, os, random, subprocess, sys
+from evidencia import selo_cena
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
 
@@ -29,6 +30,7 @@ fKick, fBody, fBodyB, fSmall, fHuge, fTag = M(30, 'SemiBold'), M(46, 'Medium'), 
 BG1, BG2 = (22, 21, 25), (32, 30, 34)
 CU, CU2, CUD = (217, 119, 58), (244, 168, 110), (120, 62, 30)
 WH, MUT, YEL = (246, 243, 239), (160, 154, 160), (255, 212, 0)
+NIVEL_COR = {'A': (92, 196, 128), 'B': CU2, 'C': (232, 196, 80), 'D': (222, 104, 96)}
 
 def ease(x): x = max(0., min(1., x)); return 1 - (1 - x) ** 3
 def mix(a, b, k): return tuple(int(x + (y - x) * k) for x, y in zip(a, b))
@@ -250,7 +252,14 @@ def screen(s, tl, fr):
         tg = Image.new('RGBA', (int(tw), 56), (0, 0, 0, 0)); tgd = ImageDraw.Draw(tg); tgd.rounded_rectangle((0, 0, tw - 1, 55), 10, fill=CU + (255,))
         tgd.text((tw / 2, 28), tag, font=fTag, fill=(20, 16, 14), anchor='mm'); tg = tg.rotate(4, expand=True, resample=Image.BICUBIC)
         a = tg.split()[3].point(lambda v: int(v * k)); tg.putalpha(a); top.alpha_composite(tg, (int(W - 70 - tg.width), 66))
-        d.text((100, 190), 'O QUE DIZ A EVIDÊNCIA', font=fKick, fill=mix(BG1, CU, k), anchor='lm')
+        nivel, selo = selo_cena(s, RT.get('references') or [])
+        if selo:   # selo A–D: bolinha na cor do nível + rótulo, encolhe para caber ao lado da etiqueta
+            cor = NIVEL_COR[nivel]; fs = fKick
+            while d.textlength(selo, font=fs) > W - 240 and fs.size > 20: fs = M(fs.size - 2, 'SemiBold')
+            d.ellipse((100, 178, 124, 202), fill=mix(BG1, cor, k))
+            d.text((138, 190), selo, font=fs, fill=mix(BG1, cor, k), anchor='lm')
+        else:
+            d.text((100, 190), 'O QUE DIZ A EVIDÊNCIA', font=fKick, fill=mix(BG1, CU, k), anchor='lm')
         kb = ease((tl - 0.4) / 0.3); y = 290
         for line in lines_for(d, s['numero'].split(), fBodyB, W - 220):
             d.text((100, y), ' '.join(line), font=fBodyB, fill=mix(BG1, WH, kb), anchor='lm'); y += 66
@@ -259,6 +268,10 @@ def screen(s, tl, fr):
             kk = ease((tl - 0.9 - j * 0.15) / 0.3); d.text((100, y), ' '.join(line), font=fBody, fill=mix(BG1, WH, kk), anchor='lm'); y += 64
         kf = ease((tl - 1.6) / 0.3); d.line((100, 720, 300, 720), fill=mix(BG1, CU, kf), width=2)
         d.text((100, 770), s['fonte'], font=fSmall, fill=mix(BG1, MUT, kf), anchor='lm')
+        if s.get('ressalva'):
+            fr_ = fSmall
+            while d.textlength(s['ressalva'], font=fr_) > W - 200 and fr_.size > 18: fr_ = M(fr_.size - 2, 'Medium')
+            d.text((100, 810), s['ressalva'], font=fr_, fill=mix(BG1, NIVEL_COR['C'], kf), anchor='lm')
         img = Image.new('RGBA', (W, H)); img.paste(top, (0, 0))
         bot = fit(fr, W, H - 900) if s.get('encaixe') else cover(fr, W, H - 900, 0.4)
         img.paste(bot, (0, 900)); return img.convert('RGB')

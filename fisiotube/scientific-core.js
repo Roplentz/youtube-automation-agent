@@ -13,7 +13,12 @@ const TIPOS_ESTUDO = {
   revisao: 'review[pt]',
 };
 
-const decode = s => s.replace(/&(?:amp|lt|gt|quot|apos);/g, x => ({'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'"}[x]));
+const NAMED = {'&amp;':'&','&lt;':'<','&gt;':'>','&quot;':'"','&apos;':"'"};
+const decode = s => s.replace(/&(?:amp|lt|gt|quot|apos|#\d+|#x[0-9a-f]+);/gi, x => {
+  if (NAMED[x]) return NAMED[x];
+  const code = x[2]==='x'||x[2]==='X' ? parseInt(x.slice(3,-1),16) : parseInt(x.slice(2,-1),10);
+  return Number.isFinite(code) && code <= 0x10FFFF ? String.fromCodePoint(code) : x;
+});
 const clean = s => decode(s.replace(/<[^>]+>/g,' ').replace(/\s+/g,' ').trim());
 function textBetween(xml, tag) {
   const m = xml.match(new RegExp('<'+tag+'(?:\\s[^>]*)?>([\\s\\S]*?)<\\/'+tag+'>','i'));

@@ -21,7 +21,7 @@ function createStoryboard({topic,draft,formato='reel',marca='FisioTube',slug}={}
   status:'DRAFT_REVIEW_REQUIRED',scientificReviewRequired:true,publishingEnabled:false,
   gancho:{titulo:['','',''],kicker:String(marca).toUpperCase(),alternativas:[]},
   cenas:[],
-  cta:{linha1:'Salve para',destaque:'revisar depois',linha2:'',rodape:''},
+  cta:{linha1:'Manda para',destaque:'um colega',linha2:'',rodape:''},
   destaques:[],correcoes_previstas:{},modelos_novos:[],references,legenda_post:''
  };
 }
