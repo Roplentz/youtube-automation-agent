@@ -52,3 +52,8 @@ test('search rejects bad filters',async()=>{
  await assert.rejects(searchPubMed('x',{tipos:['opiniao']}),/Unknown study type/);
  assert.equal(buildTerm('x'),'x');
 });
+test('decodes numeric XML entities',async()=>{
+ const xml='<PubmedArticle><MedlineCitation><PMID>123</PMID><Article><ArticleTitle>A &#x2022; B &#233;</ArticleTitle></Article></MedlineCitation></PubmedArticle>';
+ const a=await fetchPubMedArticles(['123'],{fetchImpl:async()=>({ok:true,text:async()=>xml})});
+ assert.equal(a[0].title,'A • B é');
+});

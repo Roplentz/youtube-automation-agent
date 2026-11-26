@@ -120,7 +120,7 @@ test('camera_substituta accepts b-roll video specs',()=>{
 const {validateRoteiro,assertRenderableV2}=require('./roteiro_v2');
 const rv2=require('./exemplo/roteiro_v2.json');
 
-test('v2 example roteiro is valid',()=>{const v=validateRoteiro(rv2);assert.equal(v.ok,true,v.errors.join('; '));assert.equal(v.totalSeconds,26.4);});
+test('v2 example roteiro is valid',()=>{const v=validateRoteiro(rv2);assert.equal(v.ok,true,v.errors.join('; '));assert.equal(v.totalSeconds,25.8);assert.deepEqual(v.warnings,[]);});
 
 test('v2 prova needs a PMID present in references',()=>{
  const r=clone(rv2);r.cenas[4].fonte='Fulano 2024';

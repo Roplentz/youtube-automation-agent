@@ -1,7 +1,8 @@
 'use strict';
 // Preenche `references` de um roteiro v2 ou storyboard com os metadados do PubMed (título, DOI, ano,
-// revista, desenho do estudo) a partir dos PMIDs citados. Não avalia evidência nem marca nada como revisado.
+// revista, desenho do estudo e nível A–D pelo desenho) a partir dos PMIDs citados. Não avalia evidência nem marca nada como revisado.
 const {fetchPubMedArticles,toReference}=require('../scientific-core');
+const {nivelDesenho,nivelReferencia}=require('../evidencia');
 
 const PMID_IN_TEXT=/PMID\s*:?\s*(\d+)/gi;
 
@@ -20,9 +21,14 @@ function mergeReferences(doc,articles){
  const byId=new Map(articles.map(a=>[String(a.pmid),toReference(a)]));
  const pmids=collectPmids(doc);
  const old=new Map((doc.references||[]).map(r=>[String(r.pmid),r]));
- const references=pmids.map(id=>byId.has(id)?{...old.get(id),...byId.get(id)}:(old.get(id)||{pmid:id}));
+ const references=pmids.map(id=>{
+  if(!byId.has(id)) return old.get(id)||{pmid:id};
+  const ref={...old.get(id),...byId.get(id)};
+  ref.nivel_desenho=nivelDesenho(ref.design);
+  return ref;
+ });
  const naoEncontrados=pmids.filter(id=>!byId.has(id));
- const fracos=references.filter(r=>['relato_de_caso','revisao_narrativa','outro'].includes(r.design)).map(r=>r.pmid);
+ const fracos=references.filter(r=>nivelReferencia(r)==='D').map(r=>r.pmid);
  return {doc:{...doc,references},naoEncontrados,fracos};
 }
 

@@ -38,5 +38,16 @@ class GateTest(unittest.TestCase):
             self.assertIn('Render bloqueado', r.stderr)
 
 
+
+class SeloTest(unittest.TestCase):
+    def test_matches_js_labels(self):
+        from evidencia import selo_cena
+        refs = [{'pmid': '1', 'design': 'ecr', 'year': 2021}, {'pmid': '2', 'design': 'metanalise', 'year': 2024}]
+        self.assertEqual(selo_cena({'fonte': 'PMID 1; PMID 2'}, refs), ('A', 'EVIDÊNCIA FORTE · METANÁLISE 2024'))
+        self.assertEqual(selo_cena({'fonte': 'PMID 1', 'nivel': 'C'}, refs), ('C', 'EVIDÊNCIA LIMITADA'))
+        self.assertEqual(selo_cena({'fonte': 'PMID 9'}, refs), (None, None))
+        self.assertEqual(selo_cena({'fonte': 'PMID 1'}, [{'pmid': '1', 'design': 'ecr', 'nivel': 'D'}])[0], 'D')
+
+
 if __name__ == '__main__':
     unittest.main()

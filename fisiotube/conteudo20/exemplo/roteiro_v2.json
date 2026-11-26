@@ -5,15 +5,15 @@
  "scientificReviewRequired": true,
  "publishingEnabled": false,
  "trilha": "gerada",
- "references": [{"pmid": "40365867", "doi": "10.1002/14651858.CD006185.pub6", "title": "Electromechanical-assisted training for walking after stroke (Cochrane, 2025)"}],
+ "references": [{"pmid": "40365867", "doi": "10.1002/14651858.CD006185.pub6", "title": "Electromechanical-assisted training for walking after stroke (Cochrane, 2025)", "year": 2025, "design": "revisao_sistematica", "nivel_desenho": "A"}],
  "cenas": [
-  {"id": "C1", "tipo": "hook", "dur": 3.4, "clip": ["seu_video.mp4", 0], "caixa": ["TESTEI O FUTURO", "DA REABILITAÇÃO"], "chave": ["FUTURO"], "revisado": true},
+  {"id": "C1", "tipo": "hook", "dur": 2.8, "clip": ["seu_video.mp4", 0], "caixa": ["TESTEI O FUTURO", "DA REABILITAÇÃO"], "chave": ["FUTURO"], "revisado": true},
   {"id": "C2", "tipo": "kinetic", "dur": 3.2, "texto": "3 INOVAÇÕES QUE JÁ ESTÃO MUDANDO A REABILITAÇÃO", "chave": ["MUDANDO"], "revisado": true},
   {"id": "C3", "tipo": "objeto", "dur": 3.0, "kicker": "INOVAÇÃO 1", "icone": "exo", "legenda": "EXOESQUELETO ROBÓTICO", "chave": ["ROBÓTICO"], "revisado": true},
   {"id": "C4", "tipo": "footage", "dur": 4.4, "clip": ["seu_video.mp4", 5], "legendas": [[0, "O MOTOR AUXILIA CADA PASSO", ["PASSO"]]], "revisado": true},
   {"id": "C5", "tipo": "prova", "dur": 5.2, "clip": ["seu_video.mp4", 10], "tag": "COCHRANE 2025", "numero": "101 estudos · 4.224 pessoas após AVC",
    "achado": "Treino de marcha robótico + fisioterapia: provavelmente mais chance de voltar a andar sozinho.", "fonte": "Mehrholz et al. · PMID 40365867", "revisado": true},
   {"id": "C6", "tipo": "icone", "dur": 3.6, "clip": ["seu_video.mp4", 15], "kicker": "INOVAÇÃO 3", "icone": "sensor", "legendas": [[0, "SENSORES E IA", ["IA"]]], "revisado": true},
-  {"id": "C7", "tipo": "final", "dur": 3.6, "palavras": ["SALVA", "ESSE VÍDEO"], "rodape": "Prof. Dr. Rodrigo Plentz", "revisado": true}
+  {"id": "C7", "tipo": "final", "dur": 3.6, "palavras": ["MANDA PRA", "UM COLEGA"], "rodape": "Prof. Dr. Rodrigo Plentz", "revisado": true}
  ]
 }
