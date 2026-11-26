@@ -96,3 +96,5 @@ data/thumbnails/
 fisiotube/conteudo20/**/*.mp4
 fisiotube/conteudo20/**/prev_*.jpg
 fisiotube/conteudo20/**/cenas.json
+
+__pycache__/
