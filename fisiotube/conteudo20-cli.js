@@ -6,6 +6,7 @@
 //   referencias <roteiro.json|storyboard.json>   preenche references (título, DOI, ano, revista, desenho) pelos PMIDs citados
 //   validate <storyboard.json>
 //   transcribe <video.mp4> [words.json]
+//   corrigir <storyboard.json> <words.json>   junta palavras quebradas e aplica correcoes_transcricao (guarda words_bruto.json)
 //   sync <storyboard.json> <words.json> --inicio 5 [--fim 61.3] [--arquivo src.mp4] [--cx 960] [--sem-camera 8.6-19.2,52.8-56.3] [--out cenas.json]
 //   render <pasta>   (exige cenas.json, storyboard.json revisado e o vídeo-fonte na pasta)
 //   validate-v2 <roteiro.json>          formato v2 (6 tipos de tela alternados)
@@ -20,6 +21,7 @@ const {validateRoteiro,assertRenderableV2}=require('./conteudo20/roteiro_v2');
 const {enrichReferences}=require('./conteudo20/referencias');
 const {nivelReferencia}=require('./evidencia');
 const {conferir}=require('./conteudo20/conferencia');
+const {corrigirTranscricao}=require('./conteudo20/transcricao');
 const {renderCards,cenasHtml}=require('./conteudo20/cards/render-cards');
 
 const RENDER_DIR=path.join(__dirname,'conteudo20','render');
@@ -58,6 +60,14 @@ async function main(argv=process.argv.slice(2)){
   const out=opt.out||`${sb.slug}.storyboard.json`;
   writeJson(out,sb);
   console.log(`Storyboard skeleton -> ${out} (${sb.references.length} referências). Preencha cenas e revise.`);
+ }else if(cmd==='corrigir'){
+  if(pos.length<2) throw new Error('Usage: corrigir <storyboard.json> <words.json>');
+  const bruto=path.join(path.dirname(path.resolve(pos[1])),'words_bruto.json');
+  if(!fs.existsSync(bruto)) fs.copyFileSync(pos[1],bruto);
+  const {words,aplicadas}=corrigirTranscricao(readJson(bruto),readJson(pos[0]).correcoes_transcricao);
+  writeJson(pos[1],words);
+  console.log(`${aplicadas.length} correção(ões) -> ${pos[1]} (original em words_bruto.json)`);
+  for(const a of aplicadas) console.log(`  ${a.s}s: "${a.de}" -> "${a.para}"`);
  }else if(cmd==='cards'){
   const dir=path.resolve(pos[0]||'.');const file=pos[1]||'roteiro.json';
   const v=validateRoteiro(readJson(path.join(dir,file)));
@@ -87,7 +97,8 @@ async function main(argv=process.argv.slice(2)){
  }else if(cmd==='sync'){
   if(pos.length<2) throw new Error('Usage: sync <storyboard.json> <words.json> --inicio <s>');
   const sb=readJson(pos[0]);
-  const {cenas,naoEncontrados}=buildCenas(sb,readJson(pos[1]),{
+  const {words:corrigidas}=corrigirTranscricao(readJson(pos[1]),sb.correcoes_transcricao);
+  const {cenas,naoEncontrados}=buildCenas(sb,corrigidas,{
    arquivo:opt.arquivo||'src.mp4',inicio:Number(opt.inicio||0),fim:opt.fim!==undefined?Number(opt.fim):undefined,cx:Number(opt.cx||960),
    cameraIndisponivel:typeof opt['sem-camera']==='string'?opt['sem-camera'].split(',').map(r=>r.split('-').map(Number)):[]});
   writeJson(opt.out||'cenas.json',cenas);
@@ -123,7 +134,7 @@ async function main(argv=process.argv.slice(2)){
   python('render_v2.py',[file],dir);
   console.log('Vídeo gerado como RASCUNHO. Revisão humana obrigatória antes de qualquer publicação.');
  }else{
-  console.error('Commands: storyboard | referencias | conferir | cards | validate | transcribe | sync | render | validate-v2 | render-v2');process.exitCode=2;
+  console.error('Commands: storyboard | referencias | conferir | corrigir | cards | validate | transcribe | sync | render | validate-v2 | render-v2');process.exitCode=2;
  }
 }
 
